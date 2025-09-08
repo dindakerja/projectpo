@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Monitoring Dashboard</title>
+    <!-- Use Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS from CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <h1 class="text-3xl font-bold text-gray-800">Project Dashboard</h1>
+            <button id="add-project-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                + Add New Project
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Project cards will be rendered here by JavaScript -->
+        </div>
+    </main>
+
+    <!-- Add/Edit Project Modal -->
+    <div id="project-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modal-title" class="text-2xl font-semibold text-gray-800"></h2>
+                <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+            <form id="project-form" class="space-y-4">
+                <div>
+                    <label for="project-name" class="block text-sm font-medium text-gray-700">Project Name</label>
+                    <input type="text" id="project-name" name="projectName" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="project-description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <textarea id="project-description" name="projectDescription" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="project-start-date" class="block text-sm font-medium text-gray-700">Start Date</label>
+                        <input type="date" id="project-start-date" name="projectStartDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="project-end-date" class="block text-sm font-medium text-gray-700">End Date</label>
+                        <input type="date" id="project-end-date" name="projectEndDate" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+                <div>
+                    <label for="project-status" class="block text-sm font-medium text-gray-700">Status</label>
+                    <select id="project-status" name="projectStatus" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                        <option value="On Hold">On Hold</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="project-progress" class="block text-sm font-medium text-gray-700">Progress (%)</label>
+                    <input type="number" id="project-progress" name="projectProgress" min="0" max="100" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div>
+                    <label for="project-team" class="block text-sm font-medium text-gray-700">Team Members (comma separated names)</label>
+                    <input type="text" id="project-team" name="projectTeam" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit" id="save-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                        Save Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Sample project data
+        let projects = [
+            {
+                name: "Website Redesign",
+                description: "Complete overhaul of the company's main website to improve user experience and visual design.",
+                startDate: "2025-09-01",
+                endDate: "2025-10-30",
+                status: "In Progress",
+                progress: 60,
+                team: ["Alice", "Bob", "Charlie"],
+            },
+            {
+                name: "Mobile App Development",
+                description: "Building a new mobile application for both iOS and Android platforms.",
+                startDate: "2025-08-15",
+                endDate: "2025-12-15",
+                status: "On Hold",
+                progress: 25,
+                team: ["David", "Eve"],
+            },
+            {
+                name: "Database Migration",
+                description: "Migrating from a legacy database to a new, more scalable cloud-based solution.",
+                startDate: "2025-08-01",
+                endDate: "2025-08-20",
+                status: "Completed",
+                progress: 100,
+                team: ["Frank"],
+            },
+            {
+                name: "Marketing Campaign Launch",
+                description: "Preparing and launching a new digital marketing campaign to increase brand awareness.",
+                startDate: "2025-09-15",
+                endDate: "2025-11-05",
+                status: "In Progress",
+                progress: 85,
+                team: ["Grace", "Heidi"],
+            }
+        ];
+
+        // Global variables for DOM elements and state
+        const dashboardGrid = document.getElementById('dashboard-grid');
+        const addProjectBtn = document.getElementById('add-project-btn');
+        const projectModal = document.getElementById('project-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        const projectForm = document.getElementById('project-form');
+        const modalTitle = document.getElementById('modal-title');
+        const saveButton = document.getElementById('save-btn');
+        let editingProjectIndex = null; // Stores the index of the project being edited
+
+        // Function to render a single project card
+        function renderProjectCard(project, index) {
+            const statusColors = {
+                "In Progress": "bg-blue-100 text-blue-800",
+                "Completed": "bg-green-100 text-green-800",
+                "On Hold": "bg-yellow-100 text-yellow-800",
+                "Cancelled": "bg-red-100 text-red-800"
+            };
+
+            const card = document.createElement('div');
+            card.className = "bg-white p-6 rounded-xl shadow-md flex flex-col justify-between";
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h2 class="text-2xl font-bold text-gray-800 break-words">${project.name}</h2>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">
+                            ${project.status}
+                        </span>
+                    </div>
+                    
+                    <p class="text-sm text-gray-600 mb-4">${project.description}</p>
+
+                    <div class="grid grid-cols-2 gap-2 mb-4 text-sm text-gray-500">
+                        <div><span class="font-medium text-gray-700">Start:</span> ${project.startDate}</div>
+                        <div><span class="font-medium text-gray-700">End:</span> ${project.endDate}</div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${project.progress}%;"></div>
+                        </div>
+                        <p class="text-right text-xs text-gray-500 mt-1">${project.progress}% Complete</p>
+                    </div>
+                </div>
+
+                <!-- Team Members & Edit Button -->
+                <div class="flex items-center justify-between">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-medium text-gray-700">Team:</span>
+                        ${project.team.map(member => `
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                                ${member}
+                            </span>
+                        `).join('')}
+                    </div>
+                    <!-- Edit Button -->
+                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        // Function to render all projects
+        function renderDashboard() {
+            dashboardGrid.innerHTML = '';
+            projects.forEach((project, index) => {
+                dashboardGrid.appendChild(renderProjectCard(project, index));
+            });
+        }
+
+        // Function to open the modal for adding a new project
+        function openAddModal() {
+            editingProjectIndex = null;
+            modalTitle.textContent = "Add a New Project";
+            saveButton.textContent = "Save Project";
+            projectForm.reset();
+            projectModal.style.display = 'flex';
+        }
+
+        // Function to open the modal for editing an existing project
+        function openEditModal(index) {
+            editingProjectIndex = index;
+            modalTitle.textContent = "Edit Project";
+            saveButton.textContent = "Update Project";
+            
+            const project = projects[index];
+            document.getElementById('project-name').value = project.name;
+            document.getElementById('project-description').value = project.description;
+            document.getElementById('project-start-date').value = project.startDate;
+            document.getElementById('project-end-date').value = project.endDate;
+            document.getElementById('project-status').value = project.status;
+            document.getElementById('project-progress').value = project.progress;
+            document.getElementById('project-team').value = project.team.join(', ');
+            
+            projectModal.style.display = 'flex';
+        }
+
+        // Event listeners for modal
+        addProjectBtn.addEventListener('click', openAddModal);
+
+        closeModalBtn.addEventListener('click', () => {
+            projectModal.style.display = 'none';
+        });
+
+        projectModal.addEventListener('click', (event) => {
+            if (event.target === projectModal) {
+                projectModal.style.display = 'none';
+            }
+        });
+
+        // Use event delegation for the edit buttons
+        dashboardGrid.addEventListener('click', (event) => {
+            const editButton = event.target.closest('.edit-btn');
+            if (editButton) {
+                const index = editButton.dataset.index;
+                openEditModal(index);
+            }
+        });
+
+        projectForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(projectForm);
+            const projectData = {
+                name: formData.get('projectName'),
+                description: formData.get('projectDescription'),
+                startDate: formData.get('projectStartDate'),
+                endDate: formData.get('projectEndDate'),
+                status: formData.get('projectStatus'),
+                progress: parseInt(formData.get('projectProgress')),
+                team: formData.get('projectTeam').split(',').map(name => name.trim()),
+            };
+
+            if (editingProjectIndex !== null) {
+                // Update existing project
+                projects[editingProjectIndex] = { ...projects[editingProjectIndex], ...projectData };
+            } else {
+                // Add new project
+                projects.push(projectData);
+            }
+
+            renderDashboard();
+            projectForm.reset();
+            projectModal.style.display = 'none';
+            editingProjectIndex = null; // Reset the state
+        });
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDashboard();
+        });
+    </script>
+</body>
+</html>
