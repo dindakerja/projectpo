@@ -15,27 +15,75 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .message-box {
+            animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 2.5s forwards;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-100%); }
+            to { transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
     <header class="bg-white shadow-md">
-        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
-            <h1 class="text-3xl font-bold text-gray-800">Project Dashboard</h1>
-            <button id="add-project-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
-                + Add New Project
-            </button>
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <!-- Made the title smaller -->
+                <h1 class="text-2xl font-bold text-gray-800">Project Dashboard</h1>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <label for="sort-by" class="text-gray-600 font-medium text-sm">Sort by:</label>
+                        <select id="sort-by" class="p-2 border border-gray-300 rounded-lg text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="none">Default</option>
+                            <option value="status">Status</option>
+                            <option value="startDate">Start Date</option>
+                            <option value="endDate">End Date</option>
+                        </select>
+                    </div>
+                    <!-- Adjusted padding on the button -->
+                    <button id="add-project-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 text-sm">
+                        + Add Project
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Made the navigation bar more compact -->
+            <nav class="mt-4 flex justify-center sm:justify-start space-x-4 border-b border-gray-200">
+                <button id="nav-active-projects" class="py-2 px-3 font-medium text-sm border-b-2 border-indigo-500 text-indigo-600 transition-colors duration-200">Active Projects</button>
+                <button id="nav-deleted-projects" class="py-2 px-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200">Deleted Projects</button>
+            </nav>
         </div>
     </header>
 
     <main class="flex-grow container mx-auto px-4 py-8">
-        <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- Project cards will be rendered here by JavaScript -->
+        <!-- Main Dashboard View -->
+        <div id="main-dashboard-view">
+            <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Project cards will be rendered here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Deleted Projects View -->
+        <div id="deleted-projects-view" class="hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
+                Deleted Projects
+                <button id="back-to-dashboard-btn" class="text-sm text-gray-500 hover:text-gray-700 font-medium transition-colors duration-200">
+                    &larr; Back to Dashboard
+                </button>
+            </h2>
+            <div id="deleted-projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Deleted project cards will be rendered here by JavaScript -->
+            </div>
         </div>
     </main>
 
     <!-- Add/Edit Project Modal -->
-    <div id="project-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg">
+    <div id="project-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg overflow-y-auto max-h-[90vh]">
             <div class="flex justify-between items-center mb-4">
                 <h2 id="modal-title" class="text-2xl font-semibold text-gray-800"></h2>
                 <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
@@ -76,12 +124,52 @@
                     <label for="project-team" class="block text-sm font-medium text-gray-700">Team Members (comma separated names)</label>
                     <input type="text" id="project-team" name="projectTeam" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-                <div class="flex justify-end">
-                    <button type="submit" id="save-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200">
+                
+                <!-- New Weekly Progress Section -->
+                <div id="weekly-progress-section" class="border-t pt-4 mt-4 hidden">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Weekly Progress</h3>
+                    <div id="weekly-logs" class="space-y-4 mb-4">
+                        <!-- Existing logs will be displayed here -->
+                    </div>
+                    <div>
+                        <h4 class="text-md font-medium text-gray-700 mb-2">Add New Progress Log</h4>
+                        <label for="weekly-plan" class="block text-sm font-medium text-gray-700">Plan for this week</label>
+                        <textarea id="weekly-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="weekly-update" class="block text-sm font-medium text-gray-700">Update on last week's plan</label>
+                        <textarea id="weekly-update" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="next-week-plan" class="block text-sm font-medium text-gray-700">Plan for next week</label>
+                        <textarea id="next-week-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                    </div>
+                    <button type="button" id="add-weekly-progress-btn" class="mt-2 bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 w-full text-sm">
+                        Add Weekly Progress
+                    </button>
+                </div>
+
+                <div class="flex justify-between items-center mt-4">
+                    <button type="button" id="delete-btn" class="text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 hidden">
+                        Delete Project
+                    </button>
+                    <button type="submit" id="save-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 text-sm">
                         Save Project
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+    
+    <!-- Custom confirmation message box -->
+    <div id="confirm-box" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Confirm Deletion</h3>
+            <p class="text-gray-600 mb-6">Are you sure you want to permanently delete this project? This action cannot be undone.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-delete-btn" class="bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 text-sm">Cancel</button>
+                <button id="confirm-delete-btn" class="bg-red-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-red-700 transition-colors duration-200 text-sm">Delete Permanently</button>
+            </div>
         </div>
     </div>
 
@@ -96,6 +184,10 @@
                 status: "In Progress",
                 progress: 60,
                 team: ["Alice", "Bob", "Charlie"],
+                weeklyProgress: [
+                    { week: "2025-09-01", plan: "Review design mockups and start wireframing.", update: "Completed wireframes for homepage and key landing pages.", nextWeekPlan: "Begin front-end development of the homepage." },
+                    { week: "2025-09-08", plan: "Begin front-end development of the homepage.", update: "Front-end for homepage is 80% complete.", nextWeekPlan: "Finalize homepage and start on the About Us page." }
+                ]
             },
             {
                 name: "Mobile App Development",
@@ -105,6 +197,7 @@
                 status: "On Hold",
                 progress: 25,
                 team: ["David", "Eve"],
+                weeklyProgress: []
             },
             {
                 name: "Database Migration",
@@ -114,6 +207,7 @@
                 status: "Completed",
                 progress: 100,
                 team: ["Frank"],
+                weeklyProgress: []
             },
             {
                 name: "Marketing Campaign Launch",
@@ -123,20 +217,60 @@
                 status: "In Progress",
                 progress: 85,
                 team: ["Grace", "Heidi"],
+                weeklyProgress: []
             }
         ];
+        
+        let deletedProjects = [];
 
         // Global variables for DOM elements and state
+        const dashboardView = document.getElementById('main-dashboard-view');
+        const deletedProjectsView = document.getElementById('deleted-projects-view');
         const dashboardGrid = document.getElementById('dashboard-grid');
+        const deletedProjectsGrid = document.getElementById('deleted-projects-grid');
         const addProjectBtn = document.getElementById('add-project-btn');
         const projectModal = document.getElementById('project-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const projectForm = document.getElementById('project-form');
         const modalTitle = document.getElementById('modal-title');
         const saveButton = document.getElementById('save-btn');
-        let editingProjectIndex = null; // Stores the index of the project being edited
+        const deleteButton = document.getElementById('delete-btn');
+        const weeklyProgressSection = document.getElementById('weekly-progress-section');
+        const addWeeklyProgressBtn = document.getElementById('add-weekly-progress-btn');
+        const weeklyLogsContainer = document.getElementById('weekly-logs');
+        const weeklyPlanInput = document.getElementById('weekly-plan');
+        const weeklyUpdateInput = document.getElementById('weekly-update');
+        const nextWeekPlanInput = document.getElementById('next-week-plan');
+        const sortBySelect = document.getElementById('sort-by');
+        const confirmBox = document.getElementById('confirm-box');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
-        // Function to render a single project card
+        const navActiveBtn = document.getElementById('nav-active-projects');
+        const navDeletedBtn = document.getElementById('nav-deleted-projects');
+        const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+
+        let editingProjectIndex = null; // Stores the index of the project being edited
+        let editingWeeklyLogIndex = null; // Stores the index of the weekly log being edited
+        let projectToDeleteIndex = null; // Stores the index of the project to be permanently deleted
+        let currentPage = 'dashboard';
+
+        // Function to sort projects based on a given criteria
+        function sortProjects(criteria) {
+            const sortedProjects = [...projects];
+            
+            if (criteria === 'status') {
+                const statusOrder = { "In Progress": 1, "On Hold": 2, "Completed": 3, "Cancelled": 4 };
+                sortedProjects.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
+            } else if (criteria === 'startDate') {
+                sortedProjects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+            } else if (criteria === 'endDate') {
+                sortedProjects.sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+            }
+            return sortedProjects;
+        }
+
+        // Function to render a single project card for the main dashboard
         function renderProjectCard(project, index) {
             const statusColors = {
                 "In Progress": "bg-blue-100 text-blue-800",
@@ -170,10 +304,35 @@
                         </div>
                         <p class="text-right text-xs text-gray-500 mt-1">${project.progress}% Complete</p>
                     </div>
+
+                    <!-- Weekly Progress Details -->
+                    <details class="group mt-4">
+                        <summary class="flex justify-between items-center font-medium cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200 text-sm">
+                            Weekly Progress Log
+                            <svg class="w-4 h-4 transition-transform transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </summary>
+                        <div class="mt-4 space-y-4 text-sm">
+                            ${project.weeklyProgress.length > 0 ? 
+                                project.weeklyProgress.map((log, logIndex) => `
+                                    <div class="bg-gray-100 p-4 rounded-lg flex justify-between items-start">
+                                        <div class="flex-grow">
+                                            <h4 class="font-semibold text-gray-800">Week of ${log.week}</h4>
+                                            <p class="mt-2 text-gray-700"><strong>Plan:</strong> ${log.plan}</p>
+                                            <p class="mt-1 text-gray-700"><strong>Update:</strong> ${log.update}</p>
+                                            <p class="mt-1 text-gray-700"><strong>Next Plan:</strong> ${log.nextWeekPlan}</p>
+                                        </div>
+                                    </div>
+                                `).join('') :
+                                '<p class="text-gray-500">No weekly progress logs yet.</p>'
+                            }
+                        </div>
+                    </details>
                 </div>
 
                 <!-- Team Members & Edit Button -->
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between mt-4">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="text-sm font-medium text-gray-700">Team:</span>
                         ${project.team.map(member => `
@@ -192,29 +351,68 @@
             `;
             return card;
         }
+        
+        // Function to render a single card for the deleted projects section
+        function renderDeletedProjectCard(project, index) {
+            const card = document.createElement('div');
+            card.className = "bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 flex flex-col justify-between";
+            card.innerHTML = `
+                <div>
+                    <h3 class="text-xl font-bold text-gray-600">${project.name}</h3>
+                    <p class="text-xs text-gray-500 mt-2">Deleted on ${new Date().toLocaleDateString()}</p>
+                </div>
+                <div class="flex space-x-2 mt-4">
+                    <button class="restore-btn bg-green-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200" data-index="${index}">Restore</button>
+                    <button class="delete-permanent-btn bg-red-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-red-600 transition-colors duration-200" data-index="${index}">Delete Permanent</button>
+                </div>
+            `;
+            return card;
+        }
 
-        // Function to render all projects
-        function renderDashboard() {
+        // Function to render all active projects
+        function renderDashboard(sortCriteria = 'none') {
+            const projectsToRender = sortProjects(sortCriteria);
             dashboardGrid.innerHTML = '';
-            projects.forEach((project, index) => {
+            if (projectsToRender.length === 0) {
+                dashboardGrid.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects to display. Add a new project to get started!</p>';
+            }
+            projectsToRender.forEach((project, index) => {
                 dashboardGrid.appendChild(renderProjectCard(project, index));
+            });
+        }
+        
+        // Function to render the deleted projects section
+        function renderDeletedProjects() {
+            deletedProjectsGrid.innerHTML = '';
+            if (deletedProjects.length === 0) {
+                deletedProjectsGrid.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects have been deleted yet.</p>';
+            }
+            deletedProjects.forEach((project, index) => {
+                deletedProjectsGrid.appendChild(renderDeletedProjectCard(project, index));
             });
         }
 
         // Function to open the modal for adding a new project
         function openAddModal() {
             editingProjectIndex = null;
+            editingWeeklyLogIndex = null;
             modalTitle.textContent = "Add a New Project";
             saveButton.textContent = "Save Project";
+            deleteButton.classList.add('hidden');
+            addWeeklyProgressBtn.textContent = "Add Weekly Progress";
             projectForm.reset();
+            weeklyProgressSection.classList.add('hidden');
             projectModal.style.display = 'flex';
         }
 
         // Function to open the modal for editing an existing project
         function openEditModal(index) {
             editingProjectIndex = index;
+            editingWeeklyLogIndex = null;
             modalTitle.textContent = "Edit Project";
             saveButton.textContent = "Update Project";
+            deleteButton.classList.remove('hidden');
+            addWeeklyProgressBtn.textContent = "Add Weekly Progress";
             
             const project = projects[index];
             document.getElementById('project-name').value = project.name;
@@ -224,13 +422,109 @@
             document.getElementById('project-status').value = project.status;
             document.getElementById('project-progress').value = project.progress;
             document.getElementById('project-team').value = project.team.join(', ');
-            
+
+            // Show weekly progress section and render logs
+            weeklyProgressSection.classList.remove('hidden');
+            renderWeeklyLogs(project.weeklyProgress);
+
             projectModal.style.display = 'flex';
         }
+        
+        // Function to render weekly logs in the modal
+        function renderWeeklyLogs(logs) {
+            weeklyLogsContainer.innerHTML = '';
+            if (logs.length === 0) {
+                weeklyLogsContainer.innerHTML = '<p class="text-gray-500 text-sm">No weekly progress logs yet.</p>';
+            } else {
+                logs.forEach((log, index) => {
+                    const logElement = document.createElement('div');
+                    logElement.className = "bg-gray-100 p-4 rounded-lg text-sm border border-gray-200 flex justify-between items-center";
+                    logElement.innerHTML = `
+                        <div class="flex-grow">
+                            <h4 class="font-semibold text-gray-800">Week of ${log.week}</h4>
+                            <p class="mt-2 text-gray-700"><strong>Plan:</strong> ${log.plan}</p>
+                            <p class="mt-1 text-gray-700"><strong>Update:</strong> ${log.update}</p>
+                            <p class="mt-1 text-gray-700"><strong>Next Plan:</strong> ${log.nextWeekPlan}</p>
+                        </div>
+                        <button class="edit-weekly-log-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-log-index="${index}">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </button>
+                    `;
+                    weeklyLogsContainer.appendChild(logElement);
+                });
+            }
+        }
+
+        // Function to delete a project (soft delete)
+        function softDeleteProject() {
+            if (editingProjectIndex === null) return;
+            const [project] = projects.splice(editingProjectIndex, 1);
+            deletedProjects.push(project);
+            projectModal.style.display = 'none';
+            navigateTo('deleted');
+            showMessageBox("Project moved to Deleted Projects.");
+        }
+        
+        // Function to restore a project from deleted projects
+        function restoreProject(index) {
+            const [project] = deletedProjects.splice(index, 1);
+            projects.push(project);
+            renderAll();
+            showMessageBox("Project restored successfully.");
+        }
+        
+        // Function to permanently delete a project
+        function deletePermanent(index) {
+            deletedProjects.splice(index, 1);
+            renderAll();
+            showMessageBox("Project permanently deleted.");
+        }
+
+        // Function to show a temporary message box
+        function showMessageBox(message) {
+            const messageBox = document.createElement('div');
+            messageBox.className = "message-box fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out";
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+            setTimeout(() => messageBox.remove(), 3000);
+        }
+        
+        // Master render function
+        function renderAll() {
+            if (currentPage === 'dashboard') {
+                dashboardView.classList.remove('hidden');
+                deletedProjectsView.classList.add('hidden');
+                navActiveBtn.classList.add('border-indigo-500', 'text-indigo-600');
+                navActiveBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                navDeletedBtn.classList.remove('border-indigo-500', 'text-indigo-600');
+                navDeletedBtn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                renderDashboard(sortBySelect.value);
+            } else if (currentPage === 'deleted') {
+                dashboardView.classList.add('hidden');
+                deletedProjectsView.classList.remove('hidden');
+                navActiveBtn.classList.remove('border-indigo-500', 'text-indigo-600');
+                navActiveBtn.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                navDeletedBtn.classList.add('border-indigo-500', 'text-indigo-600');
+                navDeletedBtn.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                renderDeletedProjects();
+            }
+        }
+        
+        function navigateTo(page) {
+            currentPage = page;
+            renderAll();
+        }
+
+        // Event listeners for navigation
+        navActiveBtn.addEventListener('click', () => navigateTo('dashboard'));
+        navDeletedBtn.addEventListener('click', () => navigateTo('deleted'));
+        backToDashboardBtn.addEventListener('click', () => navigateTo('dashboard'));
 
         // Event listeners for modal
         addProjectBtn.addEventListener('click', openAddModal);
-
+        
         closeModalBtn.addEventListener('click', () => {
             projectModal.style.display = 'none';
         });
@@ -240,13 +534,103 @@
                 projectModal.style.display = 'none';
             }
         });
+        
+        deleteButton.addEventListener('click', softDeleteProject);
+        
+        // Confirm box listeners
+        cancelDeleteBtn.addEventListener('click', () => {
+            confirmBox.style.display = 'none';
+        });
+        
+        confirmDeleteBtn.addEventListener('click', () => {
+            deletePermanent(projectToDeleteIndex);
+            confirmBox.style.display = 'none';
+            projectToDeleteIndex = null;
+        });
 
-        // Use event delegation for the edit buttons
+        // Use event delegation for the edit buttons on project cards
         dashboardGrid.addEventListener('click', (event) => {
             const editButton = event.target.closest('.edit-btn');
             if (editButton) {
                 const index = editButton.dataset.index;
                 openEditModal(index);
+            }
+        });
+        
+        // Use event delegation for buttons on deleted project cards
+        deletedProjectsGrid.addEventListener('click', (event) => {
+            const restoreBtn = event.target.closest('.restore-btn');
+            const deletePermanentBtn = event.target.closest('.delete-permanent-btn');
+            
+            if (restoreBtn) {
+                const index = parseInt(restoreBtn.dataset.index);
+                restoreProject(index);
+            } else if (deletePermanentBtn) {
+                const index = parseInt(deletePermanentBtn.dataset.index);
+                projectToDeleteIndex = index;
+                confirmBox.style.display = 'flex';
+            }
+        });
+
+        // Use event delegation for the edit buttons on weekly progress logs
+        weeklyLogsContainer.addEventListener('click', (event) => {
+            const editLogButton = event.target.closest('.edit-weekly-log-btn');
+            if (editLogButton) {
+                event.preventDefault(); // Prevent default button behavior
+                const logIndex = parseInt(editLogButton.dataset.logIndex);
+                editingWeeklyLogIndex = logIndex;
+
+                const project = projects[editingProjectIndex];
+                const log = project.weeklyProgress[logIndex];
+                weeklyPlanInput.value = log.plan;
+                weeklyUpdateInput.value = log.update;
+                nextWeekPlanInput.value = log.nextWeekPlan;
+                addWeeklyProgressBtn.textContent = "Update Weekly Progress";
+            }
+        });
+        
+        // Add or update a weekly progress log
+        addWeeklyProgressBtn.addEventListener('click', () => {
+            if (editingProjectIndex === null) return;
+
+            const weeklyPlan = weeklyPlanInput.value;
+            const weeklyUpdate = weeklyUpdateInput.value;
+            const nextWeekPlan = nextWeekPlanInput.value;
+
+            if (weeklyPlan || weeklyUpdate || nextWeekPlan) {
+                const currentDate = new Date();
+                const formattedDate = currentDate.toISOString().slice(0, 10);
+                
+                const newLog = {
+                    week: formattedDate,
+                    plan: weeklyPlan,
+                    update: weeklyUpdate,
+                    nextWeekPlan: nextWeekPlan
+                };
+
+                if (editingWeeklyLogIndex !== null) {
+                    // Update existing log
+                    projects[editingProjectIndex].weeklyProgress[editingWeeklyLogIndex] = newLog;
+                    editingWeeklyLogIndex = null; // Reset edit state
+                    addWeeklyProgressBtn.textContent = "Add Weekly Progress";
+                } else {
+                    // Add new log
+                    projects[editingProjectIndex].weeklyProgress.push(newLog);
+                }
+
+                renderWeeklyLogs(projects[editingProjectIndex].weeklyProgress);
+                
+                // Clear the input fields after adding
+                weeklyPlanInput.value = '';
+                weeklyUpdateInput.value = '';
+                nextWeekPlanInput.value = '';
+
+            } else {
+                const messageBox = document.createElement('div');
+                messageBox.className = "message-box fixed top-5 right-5 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out";
+                messageBox.textContent = "Please enter at least one plan or update to add a log.";
+                document.body.appendChild(messageBox);
+                setTimeout(() => messageBox.remove(), 3000);
             }
         });
 
@@ -264,22 +648,31 @@
             };
 
             if (editingProjectIndex !== null) {
-                // Update existing project
+                // Update existing project, preserving weeklyProgress
                 projects[editingProjectIndex] = { ...projects[editingProjectIndex], ...projectData };
             } else {
                 // Add new project
-                projects.push(projectData);
+                projects.push({ ...projectData, weeklyProgress: [] });
             }
-
-            renderDashboard();
+            
+            // Re-render the dashboard with the current sort selection
+            renderAll();
+            
             projectForm.reset();
+            weeklyProgressSection.classList.add('hidden');
             projectModal.style.display = 'none';
             editingProjectIndex = null; // Reset the state
+            editingWeeklyLogIndex = null;
+        });
+        
+        // Add event listener for the sort dropdown
+        sortBySelect.addEventListener('change', (event) => {
+            renderDashboard(event.target.value);
         });
 
         // Initial render
         document.addEventListener('DOMContentLoaded', () => {
-            renderDashboard();
+            renderAll();
         });
     </script>
 </body>
