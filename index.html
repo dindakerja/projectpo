@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Project Monitoring Dashboard</title>
-    <!-- Use Inter font -->
+    <!-- Use Inter font from Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        /* Animation for the message box */
         .message-box {
             animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 2.5s forwards;
         }
@@ -26,15 +27,35 @@
             from { opacity: 1; }
             to { opacity: 0; }
         }
+        /* Style for the active overdue filter button */
+        .overdue-toggle-button.active {
+            background-color: #ef4444;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transform: scale(1.02);
+        }
+        .notification-badge {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
+    <!-- Header Section -->
     <header class="bg-white shadow-md">
         <div class="container mx-auto px-4 py-4">
             <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                <!-- Made the title smaller -->
                 <h1 class="text-2xl font-bold text-gray-800">Project Dashboard</h1>
                 <div class="flex items-center space-x-4">
+                    <!-- Sort by Dropdown -->
                     <div class="flex items-center space-x-2">
                         <label for="sort-by" class="text-gray-600 font-medium text-sm">Sort by:</label>
                         <select id="sort-by" class="p-2 border border-gray-300 rounded-lg text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
@@ -42,34 +63,31 @@
                             <option value="status">Status</option>
                             <option value="startDate">Start Date</option>
                             <option value="endDate">End Date</option>
+                            <option value="weeklyLogs">Weekly Logs</option>
                         </select>
                     </div>
-                    <!-- New view controls for resizing -->
+                    <!-- View Control Dropdown -->
                     <div class="flex items-center space-x-2">
-                        <label class="text-gray-600 font-medium text-sm">View:</label>
-                        <div class="flex space-x-1 border border-gray-300 rounded-lg p-1 bg-white shadow-sm">
-                            <button id="view-list" class="p-1 rounded-md text-indigo-600 hover:bg-gray-200 transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h1v.01H3zM3 12h1v.01H3zM3 18h1v.01H3z"></path></svg>
-                            </button>
-                            <button id="view-1-col" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-2h16v2zM4 16v-2h16v2zM4 20v-2h16v2zM4 8v-2h16v2z"></path></svg>
-                            </button>
-                            <button id="view-2-col" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V4M4 20V4M20 20V4"></path></svg>
-                            </button>
-                            <button id="view-3-col" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V4M16 20V4M4 20V4M20 20V4"></path></svg>
-                            </button>
-                        </div>
+                        <label for="view-by" class="text-gray-600 font-medium text-sm">View by:</label>
+                        <select id="view-by" class="p-2 border border-gray-300 rounded-lg text-gray-700 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
+                            <option value="list">List View</option>
+                            <option value="detailed-list">Detailed List View</option>
+                            <option value="grid-2">2-Column Grid</option>
+                            <option value="grid-3">3-Column Grid</option>
+                            <option value="grid-4" selected>4-Column Grid</option>
+                        </select>
                     </div>
-                    <!-- Adjusted padding on the button -->
+                    <!-- Overdue Filter Button -->
+                    <button id="overdue-toggle-button" class="overdue-toggle-button bg-red-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200 text-sm">
+                        Show Overdue (0)
+                    </button>
+                    <!-- Add Project Button -->
                     <button id="add-project-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 text-sm">
                         + Add Project
                     </button>
                 </div>
             </div>
-            
-            <!-- Made the navigation bar more compact -->
+            <!-- Navigation Tabs -->
             <nav class="mt-4 flex justify-center sm:justify-start space-x-4 border-b border-gray-200">
                 <button id="nav-active-projects" class="py-2 px-3 font-medium text-sm border-b-2 border-indigo-500 text-indigo-600 transition-colors duration-200">Active Projects</button>
                 <button id="nav-deleted-projects" class="py-2 px-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors duration-200">Deleted Projects</button>
@@ -77,15 +95,14 @@
         </div>
     </header>
 
-    <main class="flex-grow container mx-auto px-4 py-8">
-        <!-- Main Dashboard View -->
+    <!-- Main Content Area -->
+    <main class-="flex-grow container mx-auto px-4 py-8">
+        <!-- Active Projects View -->
         <div id="main-dashboard-view">
-            <!-- Updated initial grid class -->
-            <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Project cards will be rendered here by JavaScript -->
             </div>
         </div>
-
         <!-- Deleted Projects View -->
         <div id="deleted-projects-view" class="hidden">
             <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center justify-between">
@@ -100,6 +117,7 @@
         </div>
     </main>
 
+    <!-- Modals -->
     <!-- Add/Edit Project Modal -->
     <div id="project-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg overflow-y-auto max-h-[90vh]">
@@ -133,6 +151,7 @@
                         <option value="Completed">Completed</option>
                         <option value="On Hold">On Hold</option>
                         <option value="Cancelled">Cancelled</option>
+                        <option value="Overdue">Overdue</option>
                     </select>
                 </div>
                 <div>
@@ -144,42 +163,6 @@
                     <input type="text" id="project-team" name="projectTeam" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 
-                <!-- New Weekly Progress Section -->
-                <div id="weekly-progress-section" class="border-t pt-4 mt-4 hidden">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Weekly Progress</h3>
-                    <details class="group">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200 text-sm">
-                            <span class="flex items-center space-x-2">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"></path></svg>
-                                <span>View all weekly logs</span>
-                            </span>
-                            <svg class="w-4 h-4 transition-transform transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </summary>
-                        <div id="weekly-logs" class="mt-4 space-y-4">
-                            <!-- Existing logs will be displayed here -->
-                        </div>
-                    </details>
-                    
-                    <div class="mt-6">
-                        <h4 class="text-md font-medium text-gray-700 mb-2">Add New Progress Log</h4>
-                        <label for="weekly-plan" class="block text-sm font-medium text-gray-700">Plan for this week</label>
-                        <textarea id="weekly-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                    </div>
-                    <div>
-                        <label for="weekly-update" class="block text-sm font-medium text-gray-700">Update on last week's plan</label>
-                        <textarea id="weekly-update" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                    </div>
-                    <div>
-                        <label for="next-week-plan" class="block text-sm font-medium text-gray-700">Plan for next week</label>
-                        <textarea id="next-week-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                    </div>
-                    <button type="button" id="add-weekly-progress-btn" class="mt-2 bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 w-full text-sm">
-                        Add Weekly Progress
-                    </button>
-                </div>
-
                 <div class="flex justify-between items-center mt-4">
                     <button type="button" id="delete-btn" class="text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 hidden">
                         Delete Project
@@ -204,8 +187,60 @@
         </div>
     </div>
 
+    <!-- Weekly Progress Modal (Single Project) -->
+    <div id="weekly-progress-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg overflow-y-auto max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold text-gray-800">Weekly Progress Logs for <span id="progress-project-name" class="font-bold"></span></h2>
+                <button id="close-weekly-progress-modal-btn" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+            </div>
+
+            <!-- Existing Logs Section -->
+            <details class="group border-b border-gray-200 pb-4 mb-4">
+                <summary class="flex justify-between items-center font-medium cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200 text-sm">
+                    <span class="flex items-center space-x-2">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"></path></svg>
+                        <span>View all logs for this project</span>
+                    </span>
+                    <svg class="w-4 h-4 transition-transform transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </summary>
+                <div id="single-project-weekly-logs" class="mt-4 space-y-4">
+                    <!-- Existing logs will be displayed here -->
+                </div>
+            </details>
+            
+            <!-- New Log Form -->
+            <div id="add-log-form" class="space-y-4">
+                <h3 class="text-lg font-semibold text-gray-800" id="log-form-title">Add New Progress Log</h3>
+                <div>
+                    <label for="weekly-plan" class="block text-sm font-medium text-gray-700">Plan for this week</label>
+                    <textarea id="weekly-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label for="weekly-update" class="block text-sm font-medium text-gray-700">Update on last week's plan</label>
+                    <textarea id="weekly-update" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label for="next-week-plan" class="block text-sm font-medium text-gray-700">Plan for next week</label>
+                    <textarea id="next-week-plan" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" id="cancel-edit-log-btn" class="hidden bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 w-full sm:w-auto text-sm">
+                        Cancel Edit
+                    </button>
+                    <button type="button" id="add-weekly-progress-btn" class="bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 w-full sm:w-auto text-sm">
+                        Add Weekly Progress
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     <script>
-        // Sample project data
+        // Sample project data with weekly logs
         let projects = [
             {
                 name: "Website Redesign",
@@ -216,8 +251,8 @@
                 progress: 60,
                 team: ["Alice", "Bob", "Charlie"],
                 weeklyProgress: [
-                    { week: "2025-09-01", plan: "Review design mockups and start wireframing.", update: "Completed wireframes for homepage and key landing pages.", nextWeekPlan: "Begin front-end development of the homepage." },
-                    { week: "2025-09-08", plan: "Begin front-end development of the homepage.", update: "Front-end for homepage is 80% complete.", nextWeekPlan: "Finalize homepage and start on the About Us page." }
+                    { week: "2025-09-01", plan: "Review design mockups.", update: "Completed wireframes for homepage.", nextWeekPlan: "Start front-end development." },
+                    { week: "2025-09-08", plan: "Start front-end development.", update: "Built initial components.", nextWeekPlan: "Integrate with API." }
                 ]
             },
             {
@@ -228,7 +263,7 @@
                 status: "On Hold",
                 progress: 25,
                 team: ["David", "Eve"],
-                weeklyProgress: []
+                weeklyProgress: [] 
             },
             {
                 name: "Database Migration",
@@ -238,178 +273,219 @@
                 status: "Completed",
                 progress: 100,
                 team: ["Frank"],
-                weeklyProgress: []
+                weeklyProgress: [
+                    { week: "2025-08-01", plan: "Review database schemas.", update: "Successfully migrated 50% of data.", nextWeekPlan: "Complete migration." }
+                ]
             },
             {
                 name: "Marketing Campaign Launch",
                 description: "Preparing and launching a new digital marketing campaign to increase brand awareness.",
-                startDate: "2025-09-15",
+                startDate: "2025-09-01",
                 endDate: "2025-11-05",
                 status: "In Progress",
                 progress: 85,
                 team: ["Grace", "Heidi"],
-                weeklyProgress: []
+                weeklyProgress: [
+                    { week: "2025-09-01", plan: "Plan social media strategy.", update: "Initial plans created.", nextWeekPlan: "Draft social media content." }
+                ]
             }
         ];
         
         let deletedProjects = [];
 
-        // Global variables for DOM elements and state
+        // --- DOM Element Selection ---
+        // Main view elements
         const dashboardView = document.getElementById('main-dashboard-view');
         const deletedProjectsView = document.getElementById('deleted-projects-view');
         const dashboardContainer = document.getElementById('dashboard-container');
         const deletedProjectsGrid = document.getElementById('deleted-projects-grid');
+        
+        // Buttons
         const addProjectBtn = document.getElementById('add-project-btn');
-        const projectModal = document.getElementById('project-modal');
         const closeModalBtn = document.getElementById('close-modal-btn');
-        const projectForm = document.getElementById('project-form');
-        const modalTitle = document.getElementById('modal-title');
-        const saveButton = document.getElementById('save-btn');
         const deleteButton = document.getElementById('delete-btn');
-        const weeklyProgressSection = document.getElementById('weekly-progress-section');
-        const addWeeklyProgressBtn = document.getElementById('add-weekly-progress-btn');
-        const weeklyLogsContainer = document.getElementById('weekly-logs');
-        const weeklyPlanInput = document.getElementById('weekly-plan');
-        const weeklyUpdateInput = document.getElementById('weekly-update');
-        const nextWeekPlanInput = document.getElementById('next-week-plan');
-        const sortBySelect = document.getElementById('sort-by');
-        const confirmBox = document.getElementById('confirm-box');
-        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-
+        const overdueToggleButton = document.getElementById('overdue-toggle-button');
         const navActiveBtn = document.getElementById('nav-active-projects');
         const navDeletedBtn = document.getElementById('nav-deleted-projects');
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
         
-        // New view control buttons
-        const viewListBtn = document.getElementById('view-list');
-        const view1ColBtn = document.getElementById('view-1-col');
-        const view2ColBtn = document.getElementById('view-2-col');
-        const view3ColBtn = document.getElementById('view-3-col');
+        // Modals
+        const projectModal = document.getElementById('project-modal');
+        const weeklyProgressModal = document.getElementById('weekly-progress-modal');
+        const projectForm = document.getElementById('project-form');
+        const modalTitle = document.getElementById('modal-title');
+        const saveButton = document.getElementById('save-btn');
+        const confirmBox = document.getElementById('confirm-box');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const closeWeeklyProgressModalBtn = document.getElementById('close-weekly-progress-modal-btn');
+        const weeklyPlanInput = document.getElementById('weekly-plan');
+        const weeklyUpdateInput = document.getElementById('weekly-update');
+        const nextWeekPlanInput = document.getElementById('next-week-plan');
+        const addWeeklyProgressBtn = document.getElementById('add-weekly-progress-btn');
+        const progressProjectName = document.getElementById('progress-project-name');
+        const logFormTitle = document.getElementById('log-form-title');
+        const cancelEditLogBtn = document.getElementById('cancel-edit-log-btn');
+        
+        // Containers and Selectors
+        const singleProjectWeeklyLogs = document.getElementById('single-project-weekly-logs');
+        const sortBySelect = document.getElementById('sort-by');
+        const viewBySelect = document.getElementById('view-by'); // New view dropdown
 
-        let editingProjectIndex = null; // Stores the index of the project being edited
-        let editingWeeklyLogIndex = null; // Stores the index of the weekly log being edited
-        let projectToDeleteIndex = null; // Stores the index of the project to be permanently deleted
+        // --- State Variables ---
+        let editingProjectIndex = null;
+        let editingLogIndex = null;
+        let projectToDeleteIndex = null;
         let currentPage = 'dashboard';
-        let currentLayout = 'lg:grid-cols-3'; // Stores the current grid layout class
-        let currentView = 'list'; // 'grid' or 'list'
+        let currentView = viewBySelect.value;
+        let isOverdueFilterOn = false;
 
-        // Function to sort projects based on a given criteria
+        // --- Utility Functions ---
+
+        /** Checks if a project's weekly log is overdue. */
+        function isLogStale(project) {
+            if (['Completed', 'On Hold', 'Cancelled'].includes(project.status)) return false;
+            if (project.endDate && new Date(project.endDate) < new Date()) return true;
+            if (project.weeklyProgress.length === 0) return true;
+            
+            const lastLogDate = new Date(project.weeklyProgress[project.weeklyProgress.length - 1].week);
+            const now = new Date();
+            const oneWeek = 7 * 24 * 60 * 60 * 1000;
+            return (now - lastLogDate) > oneWeek;
+        }
+
+        /** Automatically updates a project's status to 'Overdue' if needed. */
+        function updateProjectStatusToOverdue(project) {
+            if (isLogStale(project) && project.status !== 'Overdue') {
+                project.status = 'Overdue';
+            }
+        }
+        
+        /** Sorts projects based on a given criteria. */
         function sortProjects(criteria) {
             const sortedProjects = [...projects];
             
             if (criteria === 'status') {
-                const statusOrder = { "In Progress": 1, "On Hold": 2, "Completed": 3, "Cancelled": 4 };
+                const statusOrder = { "Overdue": 1, "In Progress": 2, "On Hold": 3, "Completed": 4, "Cancelled": 5 };
                 sortedProjects.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
             } else if (criteria === 'startDate') {
                 sortedProjects.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
             } else if (criteria === 'endDate') {
                 sortedProjects.sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
+            } else if (criteria === 'weeklyLogs') {
+                sortedProjects.sort((a, b) => b.weeklyProgress.length - a.weeklyProgress.length);
             }
             return sortedProjects;
         }
         
-        // Function to render a compact project list item
+        /** Displays a temporary message box. */
+        function showMessageBox(message, type = "success") {
+            const color = type === "success" ? "bg-green-500" : "bg-red-500";
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box fixed top-5 right-5 ${color} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out`;
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+            setTimeout(() => messageBox.remove(), 3000);
+        }
+
+        /** Updates the count on the "Show Overdue" button. */
+        function updateOverdueButtonCount() {
+            const overdueCount = projects.filter(project => project.status === 'Overdue').length;
+            overdueToggleButton.textContent = `Show Overdue (${overdueCount})`;
+        }
+        
+        /** Switches between dashboard and deleted projects views. */
+        function navigateTo(page) {
+            currentPage = page;
+            renderAll();
+        }
+
+        // --- Rendering Functions ---
+
+        /** Renders a single compact project list item. */
         function renderProjectListRow(project, index) {
             const statusColors = {
-                "In Progress": "bg-blue-100 text-blue-800",
-                "Completed": "bg-green-100 text-green-800",
-                "On Hold": "bg-yellow-100 text-yellow-800",
-                "Cancelled": "bg-red-100 text-red-800"
+                "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
+                "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
+                "Overdue": "bg-red-500 text-white"
             };
-            
             const weeklyProgressCount = project.weeklyProgress.length;
-            const progressBadgeColor = weeklyProgressCount > 0 ? 'bg-indigo-500' : 'bg-gray-400';
-
+            
             const row = document.createElement('div');
-            row.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col space-y-4";
+            row.className = `bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 sm:space-x-4`;
+            
             row.innerHTML = `
-                <div class="flex items-center justify-between space-x-4">
-                    <div class="flex-grow flex items-center space-x-4">
-                        <h3 class="font-semibold text-lg text-gray-800 min-w-[150px]">${project.name}</h3>
-                        <div class="flex-grow flex items-center space-x-4">
-                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
-                            <div class="w-full bg-gray-200 rounded-full h-2.5 max-w-[200px]">
-                                <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${project.progress}%;"></div>
-                            </div>
-                            <p class="text-xs text-gray-500">${project.progress}%</p>
-                        </div>
-                        <div class="flex-grow flex flex-wrap items-center gap-2">
-                             <span class="text-xs font-medium text-gray-700">Team:</span>
-                             ${project.team.map(member => `
-                                <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">
-                                    ${member}
-                                </span>
-                             `).join('')}
-                        </div>
+                <div class="flex-grow">
+                    <h3 class="font-semibold text-lg text-gray-800">${project.name}</h3>
+                    <p class="text-sm text-gray-600">${project.description}</p>
+                    <div class="flex flex-wrap items-center gap-2 mt-2">
+                         <span class="text-xs font-medium text-gray-700">Team:</span>
+                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">${member}</span>`).join('')}
                     </div>
-                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
+                </div>
+                <!-- Uniformly Sized Details -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full sm:w-auto">
+                    <!-- Status -->
+                    <div class="flex flex-col justify-center items-center h-10 w-full">
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]} text-center">${project.status}</span>
+                    </div>
+                    <!-- Dates -->
+                    <div class="flex flex-col justify-center items-center h-10 w-full">
+                        <span class="text-xs text-gray-500 text-center">
+                             ${project.startDate}<br>to ${project.endDate}
+                        </span>
+                    </div>
+                    <!-- Progress -->
+                    <div class="flex flex-col justify-center items-center h-10 w-full">
+                        <div class="bg-gray-200 rounded-full h-2.5 w-20">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${project.progress}%;"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">${project.progress}%</p>
+                    </div>
+                    <!-- View Logs Button -->
+                    <div class="flex justify-center items-center h-10 w-full">
+                         <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium px-2 py-1 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-full" data-index="${index}">
+                            View Logs
+                            <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
+                                ${weeklyProgressCount}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Edit Button -->
+                <div class="flex justify-end sm:justify-center items-center h-10 w-full sm:w-auto">
+                     <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
                     </button>
                 </div>
-                <!-- New weekly progress dropdown for the list view -->
-                <details class="group mt-4">
-                    <summary class="flex justify-between items-center font-medium cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200 text-sm">
-                        <span class="flex items-center space-x-2">
-                            <span>Weekly Progress Logs</span>
-                            <span class="ml-2 px-2 py-1 text-xs font-bold text-white rounded-full ${progressBadgeColor}">
-                                ${weeklyProgressCount}
-                            </span>
-                        </span>
-                        <svg class="w-4 h-4 transition-transform transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </summary>
-                    <div class="mt-4 space-y-4 text-sm">
-                        ${weeklyProgressCount > 0 ? 
-                            project.weeklyProgress.map((log, logIndex) => `
-                                <div class="bg-gray-100 p-4 rounded-lg flex justify-between items-start">
-                                    <div class="flex-grow">
-                                        <h4 class="font-semibold text-gray-800">Week of ${log.week}</h4>
-                                        <p class="mt-2 text-gray-700"><strong>Plan:</strong> ${log.plan}</p>
-                                        <p class="mt-1 text-gray-700"><strong>Update:</strong> ${log.update}</p>
-                                        <p class="mt-1 text-gray-700"><strong>Next Plan:</strong> ${log.nextWeekPlan}</p>
-                                    </div>
-                                </div>
-                            `).join('') :
-                            '<p class="text-gray-500">No weekly progress logs yet.</p>'
-                        }
-                    </div>
-                </details>
             `;
             return row;
         }
 
-        // Function to render a single project card for the main dashboard
+        /** Renders a single project card for the main dashboard. */
         function renderProjectCard(project, index) {
             const statusColors = {
-                "In Progress": "bg-blue-100 text-blue-800",
-                "Completed": "bg-green-100 text-green-800",
-                "On Hold": "bg-yellow-100 text-yellow-800",
-                "Cancelled": "bg-red-100 text-red-800"
+                "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
+                "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
+                "Overdue": "bg-red-500 text-white"
             };
-
+            const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
             const weeklyProgressCount = project.weeklyProgress.length;
-            const progressBadgeColor = weeklyProgressCount > 0 ? 'bg-indigo-500' : 'bg-gray-400';
-
             const card = document.createElement('div');
-            card.className = "bg-white p-6 rounded-xl shadow-md flex flex-col justify-between";
+            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass}`;
+            
             card.innerHTML = `
                 <div>
-                    <div class="flex justify-between items-center mb-2">
+                    <div class="flex justify-between items-start mb-2">
                         <h2 class="text-2xl font-bold text-gray-800 break-words">${project.name}</h2>
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">
-                            ${project.status}
-                        </span>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
                     </div>
-                    
                     <p class="text-sm text-gray-600 mb-4">${project.description}</p>
-
-                    <div class="grid grid-cols-2 gap-2 mb-4 text-sm text-gray-500">
-                        <div><span class="font-medium text-gray-700">Start:</span> ${project.startDate}</div>
-                        <div><span class="font-medium text-gray-700">End:</span> ${project.endDate}</div>
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                         <span class="text-sm font-medium text-gray-700">Team:</span>
+                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
                     </div>
                     
                     <!-- Progress Bar -->
@@ -419,50 +495,72 @@
                         </div>
                         <p class="text-right text-xs text-gray-500 mt-1">${project.progress}% Complete</p>
                     </div>
-
-                    <!-- Weekly Progress Details -->
-                    <details class="group mt-4">
-                        <summary class="flex justify-between items-center font-medium cursor-pointer text-gray-700 hover:text-indigo-600 transition-colors duration-200 text-sm">
-                            <span class="flex items-center space-x-2">
-                                <span>Weekly Progress Logs</span>
-                                <span class="ml-2 px-2 py-1 text-xs font-bold text-white rounded-full ${progressBadgeColor}">
-                                    ${weeklyProgressCount}
-                                </span>
-                            </span>
-                            <svg class="w-4 h-4 transition-transform transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </summary>
-                        <div class="mt-4 space-y-4 text-sm">
-                            ${weeklyProgressCount > 0 ? 
-                                project.weeklyProgress.map((log, logIndex) => `
-                                    <div class="bg-gray-100 p-4 rounded-lg flex justify-between items-start">
-                                        <div class="flex-grow">
-                                            <h4 class="font-semibold text-gray-800">Week of ${log.week}</h4>
-                                            <p class="mt-2 text-gray-700"><strong>Plan:</strong> ${log.plan}</p>
-                                            <p class="mt-1 text-gray-700"><strong>Update:</strong> ${log.update}</p>
-                                            <p class="mt-1 text-gray-700"><strong>Next Plan:</strong> ${log.nextWeekPlan}</p>
-                                        </div>
-                                    </div>
-                                `).join('') :
-                                '<p class="text-gray-500">No weekly progress logs yet.</p>'
-                            }
-                        </div>
-                    </details>
                 </div>
-
-                <!-- Team Members & Edit Button -->
+                <!-- Uniformly Sized Buttons -->
                 <div class="flex items-center justify-between mt-4">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="text-sm font-medium text-gray-700">Team:</span>
-                        ${project.team.map(member => `
-                            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">
-                                ${member}
+                    <div class="flex space-x-2">
+                        <!-- New 'View Weekly Logs' button for card view -->
+                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-index="${index}">
+                            View Logs
+                            <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
+                                ${weeklyProgressCount}
                             </span>
-                        `).join('')}
+                        </button>
                     </div>
-                    <!-- Edit Button -->
-                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
+                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-index="${index}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                    </button>
+                </div>
+            `;
+            return card;
+        }
+
+        /** Renders a single project card for the main dashboard. */
+        function renderProjectDetailedListRow(project, index) {
+            const statusColors = {
+                "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
+                "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
+                "Overdue": "bg-red-500 text-white"
+            };
+            const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
+            const weeklyProgressCount = project.weeklyProgress.length;
+            const card = document.createElement('div');
+            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} w-full`;
+            
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-start mb-2">
+                        <h2 class="text-2xl font-bold text-gray-800 break-words">${project.name}</h2>
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-4">${project.description}</p>
+                    <div class="flex flex-wrap items-center gap-2 mb-4">
+                         <span class="text-sm font-medium text-gray-700">Team:</span>
+                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${project.progress}%;"></div>
+                        </div>
+                        <p class="text-right text-xs text-gray-500 mt-1">${project.progress}% Complete</p>
+                    </div>
+                </div>
+                <!-- Uniformly Sized Buttons -->
+                <div class="flex items-center justify-between mt-4">
+                    <div class="flex space-x-2">
+                        <!-- New 'View Weekly Logs' button for card view -->
+                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-index="${index}">
+                            View Logs
+                            <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
+                                ${weeklyProgressCount}
+                            </span>
+                        </button>
+                    </div>
+                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-index="${index}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
@@ -472,7 +570,7 @@
             return card;
         }
         
-        // Function to render a single card for the deleted projects section
+        /** Renders a card for the deleted projects section. */
         function renderDeletedProjectCard(project, index) {
             const card = document.createElement('div');
             card.className = "bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 flex flex-col justify-between";
@@ -489,142 +587,72 @@
             return card;
         }
 
-        // Function to render all active projects
+        /** Master rendering function for the dashboard. */
         function renderDashboard(sortCriteria = 'none') {
-            const projectsToRender = sortProjects(sortCriteria);
+            let projectsToRender = [...projects];
+
+            projectsToRender.forEach(project => updateProjectStatusToOverdue(project));
+
+            if (isOverdueFilterOn) {
+                projectsToRender = projectsToRender.filter(project => project.status === 'Overdue');
+            }
+            
+            if (sortCriteria !== 'none') {
+                projectsToRender = sortProjects(sortCriteria);
+            }
+
             dashboardContainer.innerHTML = '';
             
-            // Update grid layout based on currentView and currentLayout state
-            dashboardContainer.classList.remove('grid', 'gap-6', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3');
-            if (currentView === 'grid') {
-                dashboardContainer.classList.add('grid', 'gap-6', currentLayout);
+            // Clear existing layout classes
+            dashboardContainer.className = '';
+            
+            // Apply new layout classes based on currentView
+            if (currentView.startsWith('grid')) {
+                const layout = currentView.split('-')[1];
+                dashboardContainer.classList.add('grid', 'gap-6', `md:grid-cols-2`, `lg:grid-cols-${layout}`);
+                if (layout === '1') {
+                    dashboardContainer.classList.add('grid-cols-1');
+                } else {
+                    dashboardContainer.classList.add('grid-cols-1');
+                }
             } else {
                 dashboardContainer.classList.add('flex', 'flex-col', 'space-y-4');
             }
 
             if (projectsToRender.length === 0) {
-                dashboardContainer.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects to display. Add a new project to get started!</p>';
+                const message = isOverdueFilterOn ? 'No projects are currently overdue.' : 'No projects to display. Add a new project to get started!';
+                dashboardContainer.innerHTML = `<p class="text-center text-gray-500 text-lg col-span-full">${message}</p>`;
+            } else {
+                projectsToRender.forEach((project, index) => {
+                    const originalIndex = projects.findIndex(p => p.name === project.name);
+                    let element;
+                    if (currentView === 'list') {
+                        element = renderProjectListRow(project, originalIndex);
+                    } else if (currentView === 'detailed-list') {
+                        element = renderProjectDetailedListRow(project, originalIndex);
+                    } else {
+                        element = renderProjectCard(project, originalIndex);
+                    }
+                    dashboardContainer.appendChild(element);
+                });
             }
-            projectsToRender.forEach((project, index) => {
-                if (currentView === 'grid') {
-                    dashboardContainer.appendChild(renderProjectCard(project, index));
-                } else {
-                    dashboardContainer.appendChild(renderProjectListRow(project, index));
-                }
-            });
+            
+            updateOverdueButtonCount();
         }
         
-        // Function to render the deleted projects section
+        /** Renders all deleted projects. */
         function renderDeletedProjects() {
             deletedProjectsGrid.innerHTML = '';
             if (deletedProjects.length === 0) {
                 deletedProjectsGrid.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects have been deleted yet.</p>';
-            }
-            deletedProjects.forEach((project, index) => {
-                deletedProjectsGrid.appendChild(renderDeletedProjectCard(project, index));
-            });
-        }
-
-        // Function to open the modal for adding a new project
-        function openAddModal() {
-            editingProjectIndex = null;
-            editingWeeklyLogIndex = null;
-            modalTitle.textContent = "Add a New Project";
-            saveButton.textContent = "Save Project";
-            deleteButton.classList.add('hidden');
-            addWeeklyProgressBtn.textContent = "Add Weekly Progress";
-            projectForm.reset();
-            weeklyProgressSection.classList.add('hidden');
-            projectModal.style.display = 'flex';
-        }
-
-        // Function to open the modal for editing an existing project
-        function openEditModal(index) {
-            editingProjectIndex = index;
-            editingWeeklyLogIndex = null;
-            modalTitle.textContent = "Edit Project";
-            saveButton.textContent = "Update Project";
-            deleteButton.classList.remove('hidden');
-            addWeeklyProgressBtn.textContent = "Add Weekly Progress";
-            
-            const project = projects[index];
-            document.getElementById('project-name').value = project.name;
-            document.getElementById('project-description').value = project.description;
-            document.getElementById('project-start-date').value = project.startDate;
-            document.getElementById('project-end-date').value = project.endDate;
-            document.getElementById('project-status').value = project.status;
-            document.getElementById('project-progress').value = project.progress;
-            document.getElementById('project-team').value = project.team.join(', ');
-
-            // Show weekly progress section and render logs
-            weeklyProgressSection.classList.remove('hidden');
-            renderWeeklyLogs(project.weeklyProgress);
-
-            projectModal.style.display = 'flex';
-        }
-        
-        // Function to render weekly logs in the modal
-        function renderWeeklyLogs(logs) {
-            weeklyLogsContainer.innerHTML = '';
-            if (logs.length === 0) {
-                weeklyLogsContainer.innerHTML = '<p class="text-gray-500 text-sm">No weekly progress logs yet.</p>';
             } else {
-                logs.forEach((log, index) => {
-                    const logElement = document.createElement('div');
-                    logElement.className = "bg-gray-100 p-4 rounded-lg text-sm border border-gray-200 flex justify-between items-center";
-                    logElement.innerHTML = `
-                        <div class="flex-grow">
-                            <h4 class="font-semibold text-gray-800">Week of ${log.week}</h4>
-                            <p class="mt-2 text-gray-700"><strong>Plan:</strong> ${log.plan}</p>
-                            <p class="mt-1 text-gray-700"><strong>Update:</strong> ${log.update}</p>
-                            <p class="mt-1 text-gray-700"><strong>Next Plan:</strong> ${log.nextWeekPlan}</p>
-                        </div>
-                        <button class="edit-weekly-log-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-log-index="${index}">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                            </svg>
-                        </button>
-                    `;
-                    weeklyLogsContainer.appendChild(logElement);
+                deletedProjects.forEach((project, index) => {
+                    deletedProjectsGrid.appendChild(renderDeletedProjectCard(project, index));
                 });
             }
         }
-
-        // Function to delete a project (soft delete)
-        function softDeleteProject() {
-            if (editingProjectIndex === null) return;
-            const [project] = projects.splice(editingProjectIndex, 1);
-            deletedProjects.push(project);
-            projectModal.style.display = 'none';
-            navigateTo('deleted');
-            showMessageBox("Project moved to Deleted Projects.");
-        }
         
-        // Function to restore a project from deleted projects
-        function restoreProject(index) {
-            const [project] = deletedProjects.splice(index, 1);
-            projects.push(project);
-            renderAll();
-            showMessageBox("Project restored successfully.");
-        }
-        
-        // Function to permanently delete a project
-        function deletePermanent(index) {
-            deletedProjects.splice(index, 1);
-            renderAll();
-            showMessageBox("Project permanently deleted.");
-        }
-
-        // Function to show a temporary message box
-        function showMessageBox(message) {
-            const messageBox = document.createElement('div');
-            messageBox.className = "message-box fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out";
-            messageBox.textContent = message;
-            document.body.appendChild(messageBox);
-            setTimeout(() => messageBox.remove(), 3000);
-        }
-        
-        // Master render function
+        /** Renders all views based on the current page state. */
         function renderAll() {
             if (currentPage === 'dashboard') {
                 dashboardView.classList.remove('hidden');
@@ -645,215 +673,271 @@
             }
         }
         
-        function navigateTo(page) {
-            currentPage = page;
-            renderAll();
+        /** Renders the weekly progress logs inside a given container. */
+        function renderWeeklyLogs(project, container) {
+            container.innerHTML = '';
+            if (project.weeklyProgress.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500">No weekly logs yet.</p>`;
+                return;
+            }
+
+            project.weeklyProgress.forEach((log, index) => {
+                const logElement = document.createElement('div');
+                logElement.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
+                logElement.innerHTML = `
+                    <div class="flex-grow">
+                        <div class="flex justify-between items-center mb-2">
+                            <p class="text-sm font-medium text-gray-700">Week of: ${log.week}</p>
+                        </div>
+                        <p class="text-xs text-gray-500"><span class="font-semibold text-gray-600">Plan:</span> ${log.plan}</p>
+                        <p class="text-xs text-gray-500"><span class="font-semibold text-gray-600">Update:</span> ${log.update}</p>
+                        <p class="text-xs text-gray-500"><span class="font-semibold text-gray-600">Next Plan:</span> ${log.nextWeekPlan}</p>
+                    </div>
+                    <button class="edit-log-btn text-gray-400 hover:text-indigo-600 ml-4 transition-colors duration-200" data-log-index="${index}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                    </button>
+                `;
+                container.appendChild(logElement);
+            });
         }
 
-        // Event listeners for navigation
+
+        // --- Data Manipulation Functions ---
+
+        /** Deletes a project by moving it to the deleted array (soft delete). */
+        function softDeleteProject() {
+            if (editingProjectIndex === null) return;
+            const [project] = projects.splice(editingProjectIndex, 1);
+            deletedProjects.push(project);
+            projectModal.style.display = 'none';
+            navigateTo('deleted');
+            showMessageBox("Project moved to Deleted Projects.");
+        }
+        
+        /** Restores a project from the deleted array. */
+        function restoreProject(index) {
+            const [project] = deletedProjects.splice(index, 1);
+            projects.push(project);
+            renderAll();
+            showMessageBox("Project restored successfully.");
+        }
+        
+        /** Permanently deletes a project from the deleted array. */
+        function deletePermanent(index) {
+            deletedProjects.splice(index, 1);
+            renderAll();
+            showMessageBox("Project permanently deleted.");
+        }
+
+        // --- Event Handlers ---
+        
+        // Navigation and view controls
         navActiveBtn.addEventListener('click', () => navigateTo('dashboard'));
         navDeletedBtn.addEventListener('click', () => navigateTo('deleted'));
         backToDashboardBtn.addEventListener('click', () => navigateTo('dashboard'));
 
-        // Event listeners for modal
-        addProjectBtn.addEventListener('click', openAddModal);
-        
-        closeModalBtn.addEventListener('click', () => {
-            projectModal.style.display = 'none';
+        viewBySelect.addEventListener('change', (event) => {
+            currentView = event.target.value;
+            renderDashboard(sortBySelect.value);
         });
 
-        projectModal.addEventListener('click', (event) => {
-            if (event.target === projectModal) {
-                projectModal.style.display = 'none';
-            }
+        // Modal and form events
+        addProjectBtn.addEventListener('click', () => {
+            editingProjectIndex = null;
+            modalTitle.textContent = "Add a New Project";
+            saveButton.textContent = "Save Project";
+            deleteButton.classList.add('hidden');
+            projectForm.reset();
+            projectModal.style.display = 'flex';
         });
-        
+
+        closeModalBtn.addEventListener('click', () => projectModal.style.display = 'none');
+        projectModal.addEventListener('click', (event) => {
+            if (event.target === projectModal) projectModal.style.display = 'none';
+        });
         deleteButton.addEventListener('click', softDeleteProject);
         
-        // Confirm box listeners
-        cancelDeleteBtn.addEventListener('click', () => {
-            confirmBox.style.display = 'none';
-        });
-        
+        // Confirm box events
+        cancelDeleteBtn.addEventListener('click', () => confirmBox.style.display = 'none');
         confirmDeleteBtn.addEventListener('click', () => {
             deletePermanent(projectToDeleteIndex);
             confirmBox.style.display = 'none';
             projectToDeleteIndex = null;
         });
 
-        // Use event delegation for the edit buttons on project cards
+        // Event delegation for dynamically created buttons
         dashboardContainer.addEventListener('click', (event) => {
             const editButton = event.target.closest('.edit-btn');
+            const viewLogsButton = event.target.closest('.view-weekly-logs-btn');
+
             if (editButton) {
-                const index = editButton.dataset.index;
-                openEditModal(index);
+                const index = parseInt(editButton.dataset.index);
+                editingProjectIndex = index;
+                modalTitle.textContent = "Edit Project";
+                saveButton.textContent = "Update Project";
+                deleteButton.classList.remove('hidden');
+                
+                const project = projects[index];
+                document.getElementById('project-name').value = project.name;
+                document.getElementById('project-description').value = project.description;
+                document.getElementById('project-start-date').value = project.startDate;
+                document.getElementById('project-end-date').value = project.endDate;
+                document.getElementById('project-status').value = project.status;
+                document.getElementById('project-progress').value = project.progress;
+                document.getElementById('project-team').value = project.team.join(', ');
+                
+                projectModal.style.display = 'flex';
+
+            } else if (viewLogsButton) {
+                const index = parseInt(viewLogsButton.dataset.index);
+                editingProjectIndex = index;
+                const project = projects[index];
+                
+                // Populate the new progress modal
+                progressProjectName.textContent = project.name;
+                renderWeeklyLogs(project, singleProjectWeeklyLogs);
+                weeklyPlanInput.value = '';
+                weeklyUpdateInput.value = '';
+                nextWeekPlanInput.value = '';
+                logFormTitle.textContent = 'Add New Progress Log';
+                addWeeklyProgressBtn.textContent = 'Add Weekly Progress';
+                cancelEditLogBtn.classList.add('hidden');
+                editingLogIndex = null;
+                weeklyProgressModal.style.display = 'flex';
             }
         });
         
-        // Use event delegation for buttons on deleted project cards
         deletedProjectsGrid.addEventListener('click', (event) => {
             const restoreBtn = event.target.closest('.restore-btn');
             const deletePermanentBtn = event.target.closest('.delete-permanent-btn');
             
-            if (restoreBtn) {
-                const index = parseInt(restoreBtn.dataset.index);
-                restoreProject(index);
-            } else if (deletePermanentBtn) {
-                const index = parseInt(deletePermanentBtn.dataset.index);
-                projectToDeleteIndex = index;
+            if (restoreBtn) restoreProject(parseInt(restoreBtn.dataset.index));
+            else if (deletePermanentBtn) {
+                projectToDeleteIndex = parseInt(deletePermanentBtn.dataset.index);
                 confirmBox.style.display = 'flex';
             }
         });
 
-        // Use event delegation for the edit buttons on weekly progress logs
-        weeklyLogsContainer.addEventListener('click', (event) => {
-            const editLogButton = event.target.closest('.edit-weekly-log-btn');
-            if (editLogButton) {
-                event.preventDefault(); // Prevent default button behavior
-                const logIndex = parseInt(editLogButton.dataset.logIndex);
-                editingWeeklyLogIndex = logIndex;
-
-                const project = projects[editingProjectIndex];
-                const log = project.weeklyProgress[logIndex];
-                weeklyPlanInput.value = log.plan;
-                weeklyUpdateInput.value = log.update;
-                nextWeekPlanInput.value = log.nextWeekPlan;
-                addWeeklyProgressBtn.textContent = "Update Weekly Progress";
-            }
-        });
-        
-        // Add or update a weekly progress log
-        addWeeklyProgressBtn.addEventListener('click', () => {
-            if (editingProjectIndex === null) return;
-
-            const weeklyPlan = weeklyPlanInput.value;
-            const weeklyUpdate = weeklyUpdateInput.value;
-            const nextWeekPlan = nextWeekPlanInput.value;
-
-            if (weeklyPlan || weeklyUpdate || nextWeekPlan) {
-                const currentDate = new Date();
-                const formattedDate = currentDate.toISOString().slice(0, 10);
-                
-                const newLog = {
-                    week: formattedDate,
-                    plan: weeklyPlan,
-                    update: weeklyUpdate,
-                    nextWeekPlan: nextWeekPlan
-                };
-
-                if (editingWeeklyLogIndex !== null) {
-                    // Update existing log
-                    projects[editingProjectIndex].weeklyProgress[editingWeeklyLogIndex] = newLog;
-                    editingWeeklyLogIndex = null; // Reset edit state
-                    addWeeklyProgressBtn.textContent = "Add Weekly Progress";
-                } else {
-                    // Add new log
-                    projects[editingProjectIndex].weeklyProgress.push(newLog);
-                }
-
-                renderWeeklyLogs(projects[editingProjectIndex].weeklyProgress);
-                
-                // Clear the input fields after adding
-                weeklyPlanInput.value = '';
-                weeklyUpdateInput.value = '';
-                nextWeekPlanInput.value = '';
-
-            } else {
-                const messageBox = document.createElement('div');
-                messageBox.className = "message-box fixed top-5 right-5 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out";
-                messageBox.textContent = "Please enter at least one plan or update to add a log.";
-                document.body.appendChild(messageBox);
-                setTimeout(() => messageBox.remove(), 3000);
-            }
-        });
-
+        // Form submission handling
         projectForm.addEventListener('submit', (event) => {
             event.preventDefault();
             const formData = new FormData(projectForm);
+            const progressValue = parseInt(formData.get('projectProgress'));
             const projectData = {
                 name: formData.get('projectName'),
                 description: formData.get('projectDescription'),
                 startDate: formData.get('projectStartDate'),
                 endDate: formData.get('projectEndDate'),
                 status: formData.get('projectStatus'),
-                progress: parseInt(formData.get('projectProgress')),
+                progress: progressValue,
                 team: formData.get('projectTeam').split(',').map(name => name.trim()),
             };
 
+            // New logic: If progress is 100%, set status to 'Completed'
+            if (progressValue === 100) {
+                projectData.status = 'Completed';
+            }
+
             if (editingProjectIndex !== null) {
-                // Update existing project, preserving weeklyProgress
                 projects[editingProjectIndex] = { ...projects[editingProjectIndex], ...projectData };
             } else {
-                // Add new project
                 projects.push({ ...projectData, weeklyProgress: [] });
             }
             
-            // Re-render the dashboard with the current sort selection
             renderAll();
-            
             projectForm.reset();
-            weeklyProgressSection.classList.add('hidden');
             projectModal.style.display = 'none';
-            editingProjectIndex = null; // Reset the state
-            editingWeeklyLogIndex = null;
+            editingProjectIndex = null;
         });
         
-        // Add event listener for the sort dropdown
-        sortBySelect.addEventListener('change', (event) => {
-            renderDashboard(event.target.value);
-        });
-        
-        // Event listeners for view controls
-        viewListBtn.addEventListener('click', () => {
-            currentView = 'list';
-            updateViewButtons();
-            renderDashboard(sortBySelect.value);
-        });
-        
-        view1ColBtn.addEventListener('click', () => {
-            currentView = 'grid';
-            currentLayout = 'grid-cols-1';
-            updateViewButtons();
-            renderDashboard(sortBySelect.value);
-        });
+        // Add or Edit new weekly progress log from the dedicated modal
+        addWeeklyProgressBtn.addEventListener('click', () => {
+            if (editingProjectIndex === null) return;
+            const currentProject = projects[editingProjectIndex];
+            const newLog = {
+                week: new Date().toISOString().slice(0, 10),
+                plan: weeklyPlanInput.value,
+                update: weeklyUpdateInput.value,
+                nextWeekPlan: nextWeekPlanInput.value,
+            };
 
-        view2ColBtn.addEventListener('click', () => {
-            currentView = 'grid';
-            currentLayout = 'md:grid-cols-2';
-            updateViewButtons();
-            renderDashboard(sortBySelect.value);
-        });
-
-        view3ColBtn.addEventListener('click', () => {
-            currentView = 'grid';
-            currentLayout = 'lg:grid-cols-3';
-            updateViewButtons();
-            renderDashboard(sortBySelect.value);
-        });
-
-        function updateViewButtons() {
-            const allViewButtons = [viewListBtn, view1ColBtn, view2ColBtn, view3ColBtn];
-            allViewButtons.forEach(btn => btn.classList.remove('text-indigo-600', 'hover:bg-gray-200'));
-            allViewButtons.forEach(btn => btn.classList.add('text-gray-500', 'hover:bg-gray-200'));
-
-            if (currentView === 'list') {
-                viewListBtn.classList.remove('text-gray-500');
-                viewListBtn.classList.add('text-indigo-600');
-            } else if (currentLayout === 'grid-cols-1') {
-                view1ColBtn.classList.remove('text-gray-500');
-                view1ColBtn.classList.add('text-indigo-600');
-            } else if (currentLayout === 'md:grid-cols-2') {
-                view2ColBtn.classList.remove('text-gray-500');
-                view2ColBtn.classList.add('text-indigo-600');
-            } else if (currentLayout === 'lg:grid-cols-3') {
-                view3ColBtn.classList.remove('text-gray-500');
-                view3ColBtn.classList.add('text-indigo-600');
+            if (editingLogIndex !== null) {
+                // Update existing log
+                currentProject.weeklyProgress[editingLogIndex] = { ...currentProject.weeklyProgress[editingLogIndex], ...newLog };
+                showMessageBox("Weekly progress log updated!");
+            } else {
+                // Add new log
+                currentProject.weeklyProgress.push(newLog);
+                showMessageBox("New weekly progress log added!");
             }
-        }
+            
+            renderWeeklyLogs(currentProject, singleProjectWeeklyLogs);
+            weeklyPlanInput.value = '';
+            weeklyUpdateInput.value = '';
+            nextWeekPlanInput.value = '';
+            logFormTitle.textContent = 'Add New Progress Log';
+            addWeeklyProgressBtn.textContent = 'Add Weekly Progress';
+            cancelEditLogBtn.classList.add('hidden');
+            editingLogIndex = null;
 
-        // Initial render
+            // CRITICAL FIX: Re-render the dashboard to update the notification count
+            renderAll();
+        });
+        
+        // Event delegation to handle edit buttons on logs
+        singleProjectWeeklyLogs.addEventListener('click', (event) => {
+            const editLogBtn = event.target.closest('.edit-log-btn');
+            if (editLogBtn) {
+                const logIndex = parseInt(editLogBtn.dataset.log-index);
+                editingLogIndex = logIndex;
+                const currentProject = projects[editingProjectIndex];
+                const logToEdit = currentProject.weeklyProgress[logIndex];
+                
+                weeklyPlanInput.value = logToEdit.plan;
+                weeklyUpdateInput.value = logToEdit.update;
+                nextWeekPlanInput.value = logToEdit.nextWeekPlan;
+                
+                logFormTitle.textContent = 'Edit Progress Log';
+                addWeeklyProgressBtn.textContent = 'Update Weekly Progress';
+                cancelEditLogBtn.classList.remove('hidden');
+            }
+        });
+        
+        // Cancel edit mode
+        cancelEditLogBtn.addEventListener('click', () => {
+            weeklyPlanInput.value = '';
+            weeklyUpdateInput.value = '';
+            nextWeekPlanInput.value = '';
+            logFormTitle.textContent = 'Add New Progress Log';
+            addWeeklyProgressBtn.textContent = 'Add Weekly Progress';
+            cancelEditLogBtn.classList.add('hidden');
+            editingLogIndex = null;
+        });
+
+        sortBySelect.addEventListener('change', (event) => renderDashboard(event.target.value));
+        
+        overdueToggleButton.addEventListener('click', () => {
+            isOverdueFilterOn = !isOverdueFilterOn;
+            overdueToggleButton.classList.toggle('active', isOverdueFilterOn);
+            renderAll();
+        });
+
+
+        // Event listeners to close modals
+        closeWeeklyProgressModalBtn.addEventListener('click', () => {
+            weeklyProgressModal.style.display = 'none';
+        });
+
+        weeklyProgressModal.addEventListener('click', (event) => {
+            if (event.target === weeklyProgressModal) {
+                weeklyProgressModal.style.display = 'none';
+            }
+        });
+
+        // Initial render on page load
         document.addEventListener('DOMContentLoaded', () => {
-            updateViewButtons(); // Ensure correct button is active on load
             renderAll();
         });
     </script>
