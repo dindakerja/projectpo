@@ -318,6 +318,14 @@
                         </div>
                         <p class="text-xs text-gray-500">${project.progress}%</p>
                     </div>
+                    <div class="flex-grow flex flex-wrap items-center gap-2">
+                         <span class="text-xs font-medium text-gray-700">Team:</span>
+                         ${project.team.map(member => `
+                            <span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                                ${member}
+                            </span>
+                         `).join('')}
+                    </div>
                 </div>
                 <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
