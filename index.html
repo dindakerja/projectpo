@@ -46,6 +46,51 @@
                 opacity: 0.8;
             }
         }
+
+        /* Running text animation using modern CSS */
+        @keyframes scroll-text {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .running-text-container {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .running-text {
+            display: inline-block;
+            animation: scroll-text 30s linear infinite;
+        }
+
+        .running-text.paused {
+            animation-play-state: paused;
+        }
+
+        .editable-marquee {
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent; /* default */
+        }
+        .editable-marquee.editing {
+            cursor: auto;
+            background-color: #f1f5f9;
+            border: 2px solid #6366f1;
+            outline: none;
+        }
+        
+        .status-badge {
+            font-size: 0.75rem;
+            line-height: 1rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+        }
+
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -55,6 +100,8 @@
             <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                 <h1 class="text-2xl font-bold text-gray-800">Project Dashboard</h1>
                 <div class="flex items-center space-x-4">
+                    <!-- User ID Display -->
+                    <span id="user-id-display" class="bg-gray-200 text-gray-700 text-sm font-medium px-2 py-1 rounded-full cursor-pointer" title="Your unique user ID">Loading user...</span>
                     <!-- Sort by Dropdown -->
                     <div class="flex items-center space-x-2">
                         <label for="sort-by" class="text-gray-600 font-medium text-sm">Sort by:</label>
@@ -101,6 +148,7 @@
         <div id="main-dashboard-view">
             <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Project cards will be rendered here by JavaScript -->
+                <p id="loading-message" class="text-center text-gray-500 text-lg col-span-full">Loading projects...</p>
             </div>
         </div>
         <!-- Deleted Projects View -->
@@ -162,7 +210,7 @@
                     <label for="project-team" class="block text-sm font-medium text-gray-700">Team Members (comma separated names)</label>
                     <input type="text" id="project-team" name="projectTeam" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
-                
+
                 <div class="flex justify-between items-center mt-4">
                     <button type="button" id="delete-btn" class="text-red-600 font-medium py-2 px-4 rounded-lg transition-colors duration-200 hidden">
                         Delete Project
@@ -174,7 +222,7 @@
             </form>
         </div>
     </div>
-    
+
     <!-- Custom confirmation message box -->
     <div id="confirm-box" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4 z-50">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm">
@@ -210,7 +258,7 @@
                     <!-- Existing logs will be displayed here -->
                 </div>
             </details>
-            
+
             <!-- New Log Form -->
             <div id="add-log-form" class="space-y-4">
                 <h3 class="text-lg font-semibold text-gray-800" id="log-form-title">Add New Progress Log</h3>
@@ -238,69 +286,39 @@
         </div>
     </div>
 
+    <!-- Footer with Running Text -->
+    <footer class="bg-gray-800 text-white py-2 px-4 mt-8 sticky bottom-0 z-40">
+        <div class="container mx-auto flex items-center justify-center">
+            <span class="text-sm font-medium mr-4">ANNOUNCEMENTS:</span>
+            <div id="marquee-container" class="running-text-container">
+                <span id="marquee-text" class="editable-marquee running-text" contenteditable="false">
+                    Loading...
+                </span>
+            </div>
+        </div>
+    </footer>
 
-    <script>
-        // Sample project data with weekly logs
-        let projects = [
-            {
-                name: "Website Redesign",
-                description: "Complete overhaul of the company's main website to improve user experience and visual design.",
-                startDate: "2025-09-01",
-                endDate: "2025-10-30",
-                status: "In Progress",
-                progress: 60,
-                team: ["Alice", "Bob", "Charlie"],
-                weeklyProgress: [
-                    { week: "2025-09-01", plan: "Review design mockups.", update: "Completed wireframes for homepage.", nextWeekPlan: "Start front-end development." },
-                    { week: "2025-09-08", plan: "Start front-end development.", update: "Built initial components.", nextWeekPlan: "Integrate with API." }
-                ]
-            },
-            {
-                name: "Mobile App Development",
-                description: "Building a new mobile application for both iOS and Android platforms.",
-                startDate: "2025-08-15",
-                endDate: "2025-12-15",
-                status: "On Hold",
-                progress: 25,
-                team: ["David", "Eve"],
-                weeklyProgress: [] 
-            },
-            {
-                name: "Database Migration",
-                description: "Migrating from a legacy database to a new, more scalable cloud-based solution.",
-                startDate: "2025-08-01",
-                endDate: "2025-08-20",
-                status: "Completed",
-                progress: 100,
-                team: ["Frank"],
-                weeklyProgress: [
-                    { week: "2025-08-01", plan: "Review database schemas.", update: "Successfully migrated 50% of data.", nextWeekPlan: "Complete migration." }
-                ]
-            },
-            {
-                name: "Marketing Campaign Launch",
-                description: "Preparing and launching a new digital marketing campaign to increase brand awareness.",
-                startDate: "2025-09-01",
-                endDate: "2025-11-05",
-                status: "In Progress",
-                progress: 85,
-                team: ["Grace", "Heidi"],
-                weeklyProgress: [
-                    { week: "2025-09-01", plan: "Plan social media strategy.", update: "Initial plans created.", nextWeekPlan: "Draft social media content." }
-                ]
-            }
-        ];
-        
-        let deletedProjects = [];
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
+        import { getFirestore, doc, getDoc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, setLogLevel } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+        // --- Firebase Globals & Initialization ---
+        setLogLevel('debug'); // Enable debug logs for Firebase
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        let app, db, auth, userId = null;
 
         // --- DOM Element Selection ---
-        // Main view elements
         const dashboardView = document.getElementById('main-dashboard-view');
         const deletedProjectsView = document.getElementById('deleted-projects-view');
         const dashboardContainer = document.getElementById('dashboard-container');
         const deletedProjectsGrid = document.getElementById('deleted-projects-grid');
-        
-        // Buttons
+        const loadingMessage = document.getElementById('loading-message');
+
         const addProjectBtn = document.getElementById('add-project-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const deleteButton = document.getElementById('delete-btn');
@@ -308,8 +326,7 @@
         const navActiveBtn = document.getElementById('nav-active-projects');
         const navDeletedBtn = document.getElementById('nav-deleted-projects');
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
-        
-        // Modals
+
         const projectModal = document.getElementById('project-modal');
         const weeklyProgressModal = document.getElementById('weekly-progress-modal');
         const projectForm = document.getElementById('project-form');
@@ -326,29 +343,48 @@
         const progressProjectName = document.getElementById('progress-project-name');
         const logFormTitle = document.getElementById('log-form-title');
         const cancelEditLogBtn = document.getElementById('cancel-edit-log-btn');
-        
-        // Containers and Selectors
+        const userIdDisplay = document.getElementById('user-id-display');
+
         const singleProjectWeeklyLogs = document.getElementById('single-project-weekly-logs');
         const sortBySelect = document.getElementById('sort-by');
-        const viewBySelect = document.getElementById('view-by'); // New view dropdown
+        const viewBySelect = document.getElementById('view-by');
+
+        const marqueeTextSpan = document.getElementById('marquee-text');
 
         // --- State Variables ---
-        let editingProjectIndex = null;
+        let projects = [];
+        let editingProjectDocId = null;
         let editingLogIndex = null;
-        let projectToDeleteIndex = null;
+        let projectToDeleteDocId = null;
         let currentPage = 'dashboard';
         let currentView = viewBySelect.value;
         let isOverdueFilterOn = false;
 
+        // --- Firebase Path Constants ---
+        const MARQUEE_DOC_PATH = `/artifacts/${appId}/public/data/marquee/settings`;
+        const PROJECTS_COLLECTION = 'projects';
+
         // --- Utility Functions ---
+
+        /** Displays a temporary message box. */
+        function showMessageBox(message, type = "success") {
+            const color = type === "success" ? "bg-green-500" : "bg-red-500";
+            const messageBox = document.createElement('div');
+            messageBox.className = `message-box fixed top-5 right-5 ${color} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out`;
+            messageBox.textContent = message;
+            document.body.appendChild(messageBox);
+            setTimeout(() => messageBox.remove(), 3000);
+        }
 
         /** Checks if a project's weekly log is overdue. */
         function isLogStale(project) {
-            if (['Completed', 'On Hold', 'Cancelled'].includes(project.status)) return false;
+            if (['Completed', 'On Hold', 'Cancelled', 'Archived'].includes(project.status) || project.isDeleted) return false;
             if (project.endDate && new Date(project.endDate) < new Date()) return true;
-            if (project.weeklyProgress.length === 0) return true;
-            
-            const lastLogDate = new Date(project.weeklyProgress[project.weeklyProgress.length - 1].week);
+
+            const weeklyProgress = JSON.parse(project.weeklyProgress || '[]');
+            if (weeklyProgress.length === 0) return true;
+
+            const lastLogDate = new Date(weeklyProgress[weeklyProgress.length - 1].week);
             const now = new Date();
             const oneWeek = 7 * 24 * 60 * 60 * 1000;
             return (now - lastLogDate) > oneWeek;
@@ -360,11 +396,12 @@
                 project.status = 'Overdue';
             }
         }
-        
+
         /** Sorts projects based on a given criteria. */
-        function sortProjects(criteria) {
-            const sortedProjects = [...projects];
-            
+        function sortProjects(criteria, projectsToSort) {
+            if (criteria === 'none') return projectsToSort;
+
+            const sortedProjects = [...projectsToSort];
             if (criteria === 'status') {
                 const statusOrder = { "Overdue": 1, "In Progress": 2, "On Hold": 3, "Completed": 4, "Cancelled": 5 };
                 sortedProjects.sort((a, b) => statusOrder[a.status] - statusOrder[b.status]);
@@ -373,27 +410,17 @@
             } else if (criteria === 'endDate') {
                 sortedProjects.sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
             } else if (criteria === 'weeklyLogs') {
-                sortedProjects.sort((a, b) => b.weeklyProgress.length - a.weeklyProgress.length);
+                sortedProjects.sort((a, b) => JSON.parse(b.weeklyProgress || '[]').length - JSON.parse(a.weeklyProgress || '[]').length);
             }
             return sortedProjects;
-        }
-        
-        /** Displays a temporary message box. */
-        function showMessageBox(message, type = "success") {
-            const color = type === "success" ? "bg-green-500" : "bg-red-500";
-            const messageBox = document.createElement('div');
-            messageBox.className = `message-box fixed top-5 right-5 ${color} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-transform transform duration-300 ease-in-out`;
-            messageBox.textContent = message;
-            document.body.appendChild(messageBox);
-            setTimeout(() => messageBox.remove(), 3000);
         }
 
         /** Updates the count on the "Show Overdue" button. */
         function updateOverdueButtonCount() {
-            const overdueCount = projects.filter(project => project.status === 'Overdue').length;
+            const overdueCount = projects.filter(project => project.status === 'Overdue' && !project.isDeleted).length;
             overdueToggleButton.textContent = `Show Overdue (${overdueCount})`;
         }
-        
+
         /** Switches between dashboard and deleted projects views. */
         function navigateTo(page) {
             currentPage = page;
@@ -403,31 +430,31 @@
         // --- Rendering Functions ---
 
         /** Renders a single compact project list item. */
-        function renderProjectListRow(project, index) {
+        function renderProjectListRow(project) {
             const statusColors = {
                 "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
                 "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
                 "Overdue": "bg-red-500 text-white"
             };
-            const weeklyProgressCount = project.weeklyProgress.length;
-            
+            const weeklyProgress = JSON.parse(project.weeklyProgress || '[]');
+            const weeklyProgressCount = weeklyProgress.length;
             const row = document.createElement('div');
             row.className = `bg-white p-6 rounded-xl shadow-md flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 sm:space-x-4 mb-4`;
-            
+
             row.innerHTML = `
                 <div class="flex-grow">
-                    <h3 class="font-semibold text-lg text-gray-800">${project.name}</h3>
-                    <p class="text-sm text-gray-600">${project.description}</p>
+                    <h3 class="font-semibold text-lg text-gray-800 break-words">${project.name}</h3>
+                    <p class="text-sm text-gray-600 break-words">${project.description}</p>
                     <div class="flex flex-wrap items-center gap-2 mt-2">
                          <span class="text-xs font-medium text-gray-700">Team:</span>
-                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">${member}</span>`).join('')}
+                         ${(project.team || []).map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2 py-0.5 rounded-full">${member}</span>`).join('')}
                     </div>
                 </div>
                 <!-- Uniformly Sized Details -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full sm:w-auto">
                     <!-- Status -->
                     <div class="flex flex-col justify-center items-center h-10 w-full">
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]} text-center">${project.status}</span>
+                        <span class="status-badge ${statusColors[project.status]} text-center">${project.status}</span>
                     </div>
                     <!-- Dates -->
                     <div class="flex flex-col justify-center items-center h-10 w-full">
@@ -444,7 +471,7 @@
                     </div>
                     <!-- View Logs Button -->
                     <div class="flex justify-center items-center h-10 w-full">
-                         <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium px-2 py-1 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-full" data-index="${index}">
+                         <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium px-2 py-1 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-full" data-id="${project.id}">
                             View Logs
                             <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
                                 ${weeklyProgressCount}
@@ -454,7 +481,7 @@
                 </div>
                 <!-- Edit Button -->
                 <div class="flex justify-end sm:justify-center items-center h-10 w-full sm:w-auto">
-                     <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
+                     <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-id="${project.id}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
@@ -465,29 +492,30 @@
         }
 
         /** Renders a single project card for the main dashboard. */
-        function renderProjectCard(project, index) {
+        function renderProjectCard(project) {
             const statusColors = {
                 "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
                 "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
                 "Overdue": "bg-red-500 text-white"
             };
             const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
-            const weeklyProgressCount = project.weeklyProgress.length;
+            const weeklyProgress = JSON.parse(project.weeklyProgress || '[]');
+            const weeklyProgressCount = weeklyProgress.length;
             const card = document.createElement('div');
             card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} mb-4`;
-            
+
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-start mb-2">
                         <h2 class="text-2xl font-bold text-gray-800 break-words">${project.name}</h2>
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
+                        <span class="status-badge ${statusColors[project.status]}">${project.status}</span>
                     </div>
-                    <p class="text-sm text-gray-600 mb-4">${project.description}</p>
+                    <p class="text-sm text-gray-600 mb-4 break-words">${project.description}</p>
                     <div class="flex flex-wrap items-center gap-2 mb-4">
                          <span class="text-sm font-medium text-gray-700">Team:</span>
-                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
+                         ${(project.team || []).map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
                     </div>
-                    
+
                     <!-- Progress Bar -->
                     <div class="mb-4">
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -500,14 +528,14 @@
                 <div class="flex items-center justify-between mt-4">
                     <div class="flex space-x-2">
                         <!-- New 'View Weekly Logs' button for card view -->
-                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-index="${index}">
+                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-id="${project.id}">
                             View Logs
                             <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
                                 ${weeklyProgressCount}
                             </span>
                         </button>
                     </div>
-                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-index="${index}">
+                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-id="${project.id}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
@@ -517,30 +545,30 @@
             return card;
         }
 
-        /** Renders a single project card for the main dashboard. */
-        function renderProjectDetailedListRow(project, index) {
+        function renderProjectDetailedListRow(project) {
             const statusColors = {
                 "In Progress": "bg-blue-100 text-blue-800", "Completed": "bg-green-100 text-green-800",
                 "On Hold": "bg-yellow-100 text-yellow-800", "Cancelled": "bg-red-100 text-red-800",
                 "Overdue": "bg-red-500 text-white"
             };
             const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
-            const weeklyProgressCount = project.weeklyProgress.length;
+            const weeklyProgress = JSON.parse(project.weeklyProgress || '[]');
+            const weeklyProgressCount = weeklyProgress.length;
             const card = document.createElement('div');
             card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} mb-4 w-full`;
-            
+
             card.innerHTML = `
                 <div>
                     <div class="flex justify-between items-start mb-2">
                         <h2 class="text-2xl font-bold text-gray-800 break-words">${project.name}</h2>
-                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
+                        <span class="status-badge ${statusColors[project.status]}">${project.status}</span>
                     </div>
-                    <p class="text-sm text-gray-600 mb-4">${project.description}</p>
+                    <p class="text-sm text-gray-600 mb-4 break-words">${project.description}</p>
                     <div class="flex flex-wrap items-center gap-2 mb-4">
                          <span class="text-sm font-medium text-gray-700">Team:</span>
-                         ${project.team.map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
+                         ${(project.team || []).map(member => `<span class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-1 rounded-full">${member}</span>`).join('')}
                     </div>
-                    
+
                     <!-- Progress Bar -->
                     <div class="mb-4">
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
@@ -553,14 +581,14 @@
                 <div class="flex items-center justify-between mt-4">
                     <div class="flex space-x-2">
                         <!-- New 'View Weekly Logs' button for card view -->
-                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-index="${index}">
+                        <button class="view-weekly-logs-btn bg-indigo-500 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-600 transition-colors duration-200 text-xs flex items-center h-8" data-id="${project.id}">
                             View Logs
                             <span class="ml-1 text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center notification-badge ${weeklyProgressCount === 0 ? 'hidden' : 'bg-blue-300'}">
                                 ${weeklyProgressCount}
                             </span>
                         </button>
                     </div>
-                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-index="${index}">
+                    <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200 flex items-center h-8" data-id="${project.id}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                         </svg>
@@ -569,19 +597,19 @@
             `;
             return card;
         }
-        
+
         /** Renders a card for the deleted projects section. */
-        function renderDeletedProjectCard(project, index) {
+        function renderDeletedProjectCard(project) {
             const card = document.createElement('div');
             card.className = "bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 flex flex-col justify-between mb-4";
             card.innerHTML = `
                 <div>
-                    <h3 class="text-xl font-bold text-gray-600">${project.name}</h3>
+                    <h3 class="text-xl font-bold text-gray-600 break-words">${project.name}</h3>
                     <p class="text-xs text-gray-500 mt-2">Deleted on ${new Date().toLocaleDateString()}</p>
                 </div>
                 <div class="flex space-x-2 mt-4">
-                    <button class="restore-btn bg-green-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200" data-index="${index}">Restore</button>
-                    <button class="delete-permanent-btn bg-red-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-red-600 transition-colors duration-200" data-index="${index}">Delete Permanent</button>
+                    <button class="restore-btn bg-green-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-green-600 transition-colors duration-200" data-id="${project.id}">Restore</button>
+                    <button class="delete-permanent-btn bg-red-500 text-white font-medium py-1 px-3 rounded-lg text-sm hover:bg-red-600 transition-colors duration-200" data-id="${project.id}">Delete Permanent</button>
                 </div>
             `;
             return card;
@@ -589,24 +617,18 @@
 
         /** Master rendering function for the dashboard. */
         function renderDashboard(sortCriteria = 'none') {
-            let projectsToRender = [...projects];
-
-            projectsToRender.forEach(project => updateProjectStatusToOverdue(project));
+            loadingMessage.classList.add('hidden');
+            let projectsToRender = projects.filter(p => !p.isDeleted);
 
             if (isOverdueFilterOn) {
                 projectsToRender = projectsToRender.filter(project => project.status === 'Overdue');
             }
-            
-            if (sortCriteria !== 'none') {
-                projectsToRender = sortProjects(sortCriteria);
-            }
+
+            projectsToRender = sortProjects(sortCriteria, projectsToRender);
 
             dashboardContainer.innerHTML = '';
-            
-            // Clear existing layout classes
             dashboardContainer.className = '';
-            
-            // Apply new layout classes based on currentView
+
             if (currentView.startsWith('grid')) {
                 const layout = currentView.split('-')[1];
                 dashboardContainer.classList.add('grid', 'gap-6', `md:grid-cols-2`, `lg:grid-cols-${layout}`);
@@ -623,35 +645,35 @@
                 const message = isOverdueFilterOn ? 'No projects are currently overdue.' : 'No projects to display. Add a new project to get started!';
                 dashboardContainer.innerHTML = `<p class="text-center text-gray-500 text-lg col-span-full">${message}</p>`;
             } else {
-                projectsToRender.forEach((project, index) => {
-                    const originalIndex = projects.findIndex(p => p.name === project.name);
+                projectsToRender.forEach(project => {
                     let element;
                     if (currentView === 'list') {
-                        element = renderProjectListRow(project, originalIndex);
+                        element = renderProjectListRow(project);
                     } else if (currentView === 'detailed-list') {
-                        element = renderProjectDetailedListRow(project, originalIndex);
+                        element = renderProjectDetailedListRow(project);
                     } else {
-                        element = renderProjectCard(project, originalIndex);
+                        element = renderProjectCard(project);
                     }
                     dashboardContainer.appendChild(element);
                 });
             }
-            
             updateOverdueButtonCount();
         }
-        
+
         /** Renders all deleted projects. */
         function renderDeletedProjects() {
+            loadingMessage.classList.add('hidden');
+            const deleted = projects.filter(p => p.isDeleted);
             deletedProjectsGrid.innerHTML = '';
-            if (deletedProjects.length === 0) {
+            if (deleted.length === 0) {
                 deletedProjectsGrid.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects have been deleted yet.</p>';
             } else {
-                deletedProjects.forEach((project, index) => {
-                    deletedProjectsGrid.appendChild(renderDeletedProjectCard(project, index));
+                deleted.forEach(project => {
+                    deletedProjectsGrid.appendChild(renderDeletedProjectCard(project));
                 });
             }
         }
-        
+
         /** Renders all views based on the current page state. */
         function renderAll() {
             if (currentPage === 'dashboard') {
@@ -672,16 +694,17 @@
                 renderDeletedProjects();
             }
         }
-        
+
         /** Renders the weekly progress logs inside a given container. */
         function renderWeeklyLogs(project, container) {
             container.innerHTML = '';
-            if (project.weeklyProgress.length === 0) {
+            const weeklyProgress = JSON.parse(project.weeklyProgress || '[]');
+            if (weeklyProgress.length === 0) {
                 container.innerHTML = `<p class="text-center text-gray-500">No weekly logs yet.</p>`;
                 return;
             }
 
-            project.weeklyProgress.forEach((log, index) => {
+            weeklyProgress.forEach((log, index) => {
                 const logElement = document.createElement('div');
                 logElement.className = 'bg-gray-50 p-4 rounded-lg border border-gray-200 flex justify-between items-center';
                 logElement.innerHTML = `
@@ -703,36 +726,35 @@
             });
         }
 
-
-        // --- Data Manipulation Functions ---
+        // --- Firebase Data Manipulation Functions ---
 
         /** Deletes a project by moving it to the deleted array (soft delete). */
-        function softDeleteProject() {
-            if (editingProjectIndex === null) return;
-            const [project] = projects.splice(editingProjectIndex, 1);
-            deletedProjects.push(project);
+        async function softDeleteProject() {
+            if (!editingProjectDocId) return;
+            const projectRef = doc(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`, editingProjectDocId);
+            await updateDoc(projectRef, { isDeleted: true });
             projectModal.style.display = 'none';
-            navigateTo('deleted');
             showMessageBox("Project moved to Deleted Projects.");
         }
-        
+
         /** Restores a project from the deleted array. */
-        function restoreProject(index) {
-            const [project] = deletedProjects.splice(index, 1);
-            projects.push(project);
-            renderAll();
+        async function restoreProject(docId) {
+            if (!docId) return;
+            const projectRef = doc(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`, docId);
+            await updateDoc(projectRef, { isDeleted: false });
             showMessageBox("Project restored successfully.");
         }
-        
+
         /** Permanently deletes a project from the deleted array. */
-        function deletePermanent(index) {
-            deletedProjects.splice(index, 1);
-            renderAll();
+        async function deletePermanent(docId) {
+            if (!docId) return;
+            const projectRef = doc(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`, docId);
+            await deleteDoc(projectRef);
             showMessageBox("Project permanently deleted.");
         }
 
         // --- Event Handlers ---
-        
+
         // Navigation and view controls
         navActiveBtn.addEventListener('click', () => navigateTo('dashboard'));
         navDeletedBtn.addEventListener('click', () => navigateTo('deleted'));
@@ -745,7 +767,7 @@
 
         // Modal and form events
         addProjectBtn.addEventListener('click', () => {
-            editingProjectIndex = null;
+            editingProjectDocId = null;
             modalTitle.textContent = "Add a New Project";
             saveButton.textContent = "Save Project";
             deleteButton.classList.add('hidden');
@@ -758,13 +780,13 @@
             if (event.target === projectModal) projectModal.style.display = 'none';
         });
         deleteButton.addEventListener('click', softDeleteProject);
-        
+
         // Confirm box events
         cancelDeleteBtn.addEventListener('click', () => confirmBox.style.display = 'none');
         confirmDeleteBtn.addEventListener('click', () => {
-            deletePermanent(projectToDeleteIndex);
+            deletePermanent(projectToDeleteDocId);
             confirmBox.style.display = 'none';
-            projectToDeleteIndex = null;
+            projectToDeleteDocId = null;
         });
 
         // Event delegation for dynamically created buttons
@@ -773,29 +795,30 @@
             const viewLogsButton = event.target.closest('.view-weekly-logs-btn');
 
             if (editButton) {
-                const index = parseInt(editButton.dataset.index);
-                editingProjectIndex = index;
+                const docId = editButton.dataset.id;
+                const project = projects.find(p => p.id === docId);
+                if (!project) return;
+                editingProjectDocId = docId;
                 modalTitle.textContent = "Edit Project";
                 saveButton.textContent = "Update Project";
                 deleteButton.classList.remove('hidden');
-                
-                const project = projects[index];
+
                 document.getElementById('project-name').value = project.name;
                 document.getElementById('project-description').value = project.description;
                 document.getElementById('project-start-date').value = project.startDate;
                 document.getElementById('project-end-date').value = project.endDate;
                 document.getElementById('project-status').value = project.status;
                 document.getElementById('project-progress').value = project.progress;
-                document.getElementById('project-team').value = project.team.join(', ');
-                
+                document.getElementById('project-team').value = (project.team || []).join(', ');
+
                 projectModal.style.display = 'flex';
 
             } else if (viewLogsButton) {
-                const index = parseInt(viewLogsButton.dataset.index);
-                editingProjectIndex = index;
-                const project = projects[index];
-                
-                // Populate the new progress modal
+                const docId = viewLogsButton.dataset.id;
+                const project = projects.find(p => p.id === docId);
+                if (!project) return;
+                editingProjectDocId = docId;
+
                 progressProjectName.textContent = project.name;
                 renderWeeklyLogs(project, singleProjectWeeklyLogs);
                 weeklyPlanInput.value = '';
@@ -808,20 +831,21 @@
                 weeklyProgressModal.style.display = 'flex';
             }
         });
-        
+
         deletedProjectsGrid.addEventListener('click', (event) => {
             const restoreBtn = event.target.closest('.restore-btn');
             const deletePermanentBtn = event.target.closest('.delete-permanent-btn');
-            
-            if (restoreBtn) restoreProject(parseInt(restoreBtn.dataset.index));
-            else if (deletePermanentBtn) {
-                projectToDeleteIndex = parseInt(deletePermanentBtn.dataset.index);
+
+            if (restoreBtn) {
+                 restoreProject(restoreBtn.dataset.id);
+            } else if (deletePermanentBtn) {
+                projectToDeleteDocId = deletePermanentBtn.dataset.id;
                 confirmBox.style.display = 'flex';
             }
         });
 
         // Form submission handling
-        projectForm.addEventListener('submit', (event) => {
+        projectForm.addEventListener('submit', async (event) => {
             event.preventDefault();
             const formData = new FormData(projectForm);
             const progressValue = parseInt(formData.get('projectProgress'));
@@ -833,6 +857,8 @@
                 status: formData.get('projectStatus'),
                 progress: progressValue,
                 team: formData.get('projectTeam').split(',').map(name => name.trim()),
+                isDeleted: false,
+                weeklyProgress: '[]' // Initialize as empty JSON string
             };
 
             // New logic: If progress is 100%, set status to 'Completed'
@@ -840,22 +866,37 @@
                 projectData.status = 'Completed';
             }
 
-            if (editingProjectIndex !== null) {
-                projects[editingProjectIndex] = { ...projects[editingProjectIndex], ...projectData };
+            if (editingProjectDocId) {
+                try {
+                    const projectRef = doc(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`, editingProjectDocId);
+                    await updateDoc(projectRef, projectData);
+                    showMessageBox("Project updated successfully!");
+                } catch (e) {
+                    console.error("Error updating document: ", e);
+                    showMessageBox("Error updating project.", "error");
+                }
             } else {
-                projects.push({ ...projectData, weeklyProgress: [] });
+                try {
+                    await addDoc(collection(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`), projectData);
+                    showMessageBox("Project added successfully!");
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    showMessageBox("Error adding project.", "error");
+                }
             }
-            
-            renderAll();
             projectForm.reset();
             projectModal.style.display = 'none';
-            editingProjectIndex = null;
+            editingProjectDocId = null;
         });
-        
+
         // Add or Edit new weekly progress log from the dedicated modal
-        addWeeklyProgressBtn.addEventListener('click', () => {
-            if (editingProjectIndex === null) return;
-            const currentProject = projects[editingProjectIndex];
+        addWeeklyProgressBtn.addEventListener('click', async () => {
+            if (!editingProjectDocId) return;
+
+            const currentProject = projects.find(p => p.id === editingProjectDocId);
+            if (!currentProject) return;
+
+            const weeklyProgress = JSON.parse(currentProject.weeklyProgress || '[]');
             const newLog = {
                 week: new Date().toISOString().slice(0, 10),
                 plan: weeklyPlanInput.value,
@@ -864,16 +905,21 @@
             };
 
             if (editingLogIndex !== null) {
-                // Update existing log
-                currentProject.weeklyProgress[editingLogIndex] = { ...currentProject.weeklyProgress[editingLogIndex], ...newLog };
-                showMessageBox("Weekly progress log updated!");
+                weeklyProgress[editingLogIndex] = { ...weeklyProgress[editingLogIndex], ...newLog };
             } else {
-                // Add new log
-                currentProject.weeklyProgress.push(newLog);
-                showMessageBox("New weekly progress log added!");
+                weeklyProgress.push(newLog);
             }
-            
-            renderWeeklyLogs(currentProject, singleProjectWeeklyLogs);
+
+            try {
+                const projectRef = doc(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`, editingProjectDocId);
+                await updateDoc(projectRef, { weeklyProgress: JSON.stringify(weeklyProgress) });
+                showMessageBox(editingLogIndex !== null ? "Weekly progress log updated!" : "New weekly progress log added!");
+            } catch (e) {
+                console.error("Error updating weekly logs: ", e);
+                showMessageBox("Error updating weekly logs.", "error");
+            }
+
+            // Reset form fields
             weeklyPlanInput.value = '';
             weeklyUpdateInput.value = '';
             nextWeekPlanInput.value = '';
@@ -882,29 +928,32 @@
             cancelEditLogBtn.classList.add('hidden');
             editingLogIndex = null;
 
-            // CRITICAL FIX: Re-render the dashboard to update the notification count
-            renderAll();
+            // Re-render the logs in the modal
+            renderWeeklyLogs(currentProject, singleProjectWeeklyLogs);
         });
-        
+
         // Event delegation to handle edit buttons on logs
         singleProjectWeeklyLogs.addEventListener('click', (event) => {
             const editLogBtn = event.target.closest('.edit-log-btn');
             if (editLogBtn) {
-                const logIndex = parseInt(editLogBtn.dataset.log-index);
+                const logIndex = parseInt(editLogBtn.dataset.logIndex);
                 editingLogIndex = logIndex;
-                const currentProject = projects[editingProjectIndex];
-                const logToEdit = currentProject.weeklyProgress[logIndex];
-                
+                const currentProject = projects.find(p => p.id === editingProjectDocId);
+                if (!currentProject) return;
+
+                const weeklyProgress = JSON.parse(currentProject.weeklyProgress || '[]');
+                const logToEdit = weeklyProgress[logIndex];
+
                 weeklyPlanInput.value = logToEdit.plan;
                 weeklyUpdateInput.value = logToEdit.update;
                 nextWeekPlanInput.value = logToEdit.nextWeekPlan;
-                
+
                 logFormTitle.textContent = 'Edit Progress Log';
                 addWeeklyProgressBtn.textContent = 'Update Weekly Progress';
                 cancelEditLogBtn.classList.remove('hidden');
             }
         });
-        
+
         // Cancel edit mode
         cancelEditLogBtn.addEventListener('click', () => {
             weeklyPlanInput.value = '';
@@ -917,7 +966,7 @@
         });
 
         sortBySelect.addEventListener('change', (event) => renderDashboard(event.target.value));
-        
+
         overdueToggleButton.addEventListener('click', () => {
             isOverdueFilterOn = !isOverdueFilterOn;
             overdueToggleButton.classList.toggle('active', isOverdueFilterOn);
@@ -936,10 +985,114 @@
             }
         });
 
-        // Initial render on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            renderAll();
+        // --- Editable Marquee Logic ---
+        const MARQUEE_DOC_ID = 'marquee_text';
+
+        async function saveMarqueeText(text) {
+            try {
+                const docRef = doc(db, MARQUEE_DOC_PATH);
+                await setDoc(docRef, { text });
+            } catch (e) {
+                console.error("Error saving marquee text: ", e);
+            }
+        }
+
+        async function loadMarqueeText() {
+            try {
+                const docRef = doc(db, MARQUEE_DOC_PATH);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    marqueeTextSpan.textContent = docSnap.data().text;
+                } else {
+                    const defaultText = "Weekly project reports are due every Friday. Don't forget to update your progress and add notes for the team.";
+                    await setDoc(docRef, { text: defaultText });
+                    marqueeTextSpan.textContent = defaultText;
+                }
+            } catch (e) {
+                console.error("Error loading marquee text: ", e);
+                marqueeTextSpan.textContent = "Error loading announcements.";
+            }
+        }
+
+        // When the marquee text is clicked
+        marqueeTextSpan.addEventListener('click', () => {
+            marqueeTextSpan.contentEditable = "true";
+            marqueeTextSpan.focus();
+            marqueeTextSpan.classList.add('editing');
+            marqueeTextSpan.parentElement.classList.add('paused');
         });
+
+        // When the user presses the 'Enter' key
+        marqueeTextSpan.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevents a new line from being added
+                marqueeTextSpan.contentEditable = "false";
+                marqueeTextSpan.classList.remove('editing');
+
+                // CRITICAL FIX: To restart the animation from the beginning,
+                // we must remove the animation class and then re-add it.
+                marqueeTextSpan.classList.remove('running-text');
+
+                setTimeout(() => {
+                    marqueeTextSpan.classList.add('running-text');
+                }, 10);
+
+                marqueeTextSpan.blur(); // Remove focus
+                saveMarqueeText(marqueeTextSpan.textContent);
+            }
+        });
+
+        // --- Firebase Initialization and Auth State Listener ---
+        function initApp() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = `User ID: ${userId}`;
+                        loadMarqueeText();
+                        listenForProjects();
+                    } else {
+                        // Sign in anonymously if no user is found
+                        if (typeof __initial_auth_token !== 'undefined') {
+                             try {
+                                await signInWithCustomToken(auth, __initial_auth_token);
+                             } catch(error) {
+                                console.error("Custom token sign-in failed. Signing in anonymously.", error);
+                                await signInAnonymously(auth);
+                             }
+                        } else {
+                             await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase initialization failed: ", error);
+            }
+        }
+
+        /** Sets up real-time listener for projects. */
+        function listenForProjects() {
+            if (!db || !userId) return;
+
+            const q = collection(db, `artifacts/${appId}/users/${userId}/${PROJECTS_COLLECTION}`);
+
+            onSnapshot(q, (snapshot) => {
+                projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                projects.forEach(project => updateProjectStatusToOverdue(project));
+                renderAll();
+            }, (error) => {
+                console.error("Error listening to projects: ", error);
+                showMessageBox("Error loading projects. Check console for details.", "error");
+            });
+        }
+
+
+        // Initial app load
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
 </body>
 </html>
