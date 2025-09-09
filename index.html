@@ -96,7 +96,7 @@
     </header>
 
     <!-- Main Content Area -->
-    <main class-="flex-grow container mx-auto px-4 py-8">
+    <main class="flex-grow container mx-auto px-4 py-8">
         <!-- Active Projects View -->
         <div id="main-dashboard-view">
             <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -412,7 +412,7 @@
             const weeklyProgressCount = project.weeklyProgress.length;
             
             const row = document.createElement('div');
-            row.className = `bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 sm:space-x-4`;
+            row.className = `bg-white p-6 rounded-xl shadow-md flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 sm:space-x-4 mb-4`;
             
             row.innerHTML = `
                 <div class="flex-grow">
@@ -474,7 +474,7 @@
             const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
             const weeklyProgressCount = project.weeklyProgress.length;
             const card = document.createElement('div');
-            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass}`;
+            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} mb-4`;
             
             card.innerHTML = `
                 <div>
@@ -527,7 +527,7 @@
             const borderColorClass = project.status === 'Overdue' ? 'border-2 border-red-500' : 'border border-gray-200';
             const weeklyProgressCount = project.weeklyProgress.length;
             const card = document.createElement('div');
-            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} w-full`;
+            card.className = `bg-white p-6 rounded-xl shadow-md flex flex-col justify-between ${borderColorClass} mb-4 w-full`;
             
             card.innerHTML = `
                 <div>
@@ -573,7 +573,7 @@
         /** Renders a card for the deleted projects section. */
         function renderDeletedProjectCard(project, index) {
             const card = document.createElement('div');
-            card.className = "bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 flex flex-col justify-between";
+            card.className = "bg-gray-100 p-6 rounded-xl shadow-inner border border-gray-300 flex flex-col justify-between mb-4";
             card.innerHTML = `
                 <div>
                     <h3 class="text-xl font-bold text-gray-600">${project.name}</h3>
