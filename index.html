@@ -18,7 +18,6 @@
         .message-box {
             animation: slideIn 0.5s ease-out forwards, fadeOut 0.5s ease-in 2.5s forwards;
         }
-        
         @keyframes slideIn {
             from { transform: translateY(-100%); }
             to { transform: translateY(0); }
@@ -45,6 +44,24 @@
                             <option value="endDate">End Date</option>
                         </select>
                     </div>
+                    <!-- New view controls for resizing -->
+                    <div class="flex items-center space-x-2">
+                        <label class="text-gray-600 font-medium text-sm">View:</label>
+                        <div class="flex space-x-1 border border-gray-300 rounded-lg p-1 bg-white shadow-sm">
+                            <button id="view-list" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h1v.01H3zM3 12h1v.01H3zM3 18h1v.01H3z"></path></svg>
+                            </button>
+                            <button id="view-1-col" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v-2h16v2zM4 16v-2h16v2zM4 20v-2h16v2zM4 8v-2h16v2z"></path></svg>
+                            </button>
+                            <button id="view-2-col" class="p-1 rounded-md text-gray-500 hover:bg-gray-200 transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V4M4 20V4M20 20V4"></path></svg>
+                            </button>
+                            <button id="view-3-col" class="p-1 rounded-md text-indigo-600 hover:bg-gray-200 transition-colors duration-200">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 20V4M16 20V4M4 20V4M20 20V4"></path></svg>
+                            </button>
+                        </div>
+                    </div>
                     <!-- Adjusted padding on the button -->
                     <button id="add-project-btn" class="bg-indigo-600 text-white font-medium py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 text-sm">
                         + Add Project
@@ -63,7 +80,8 @@
     <main class="flex-grow container mx-auto px-4 py-8">
         <!-- Main Dashboard View -->
         <div id="main-dashboard-view">
-            <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Updated initial grid class -->
+            <div id="dashboard-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Project cards will be rendered here by JavaScript -->
             </div>
         </div>
@@ -227,7 +245,7 @@
         // Global variables for DOM elements and state
         const dashboardView = document.getElementById('main-dashboard-view');
         const deletedProjectsView = document.getElementById('deleted-projects-view');
-        const dashboardGrid = document.getElementById('dashboard-grid');
+        const dashboardContainer = document.getElementById('dashboard-container');
         const deletedProjectsGrid = document.getElementById('deleted-projects-grid');
         const addProjectBtn = document.getElementById('add-project-btn');
         const projectModal = document.getElementById('project-modal');
@@ -250,11 +268,19 @@
         const navActiveBtn = document.getElementById('nav-active-projects');
         const navDeletedBtn = document.getElementById('nav-deleted-projects');
         const backToDashboardBtn = document.getElementById('back-to-dashboard-btn');
+        
+        // New view control buttons
+        const viewListBtn = document.getElementById('view-list');
+        const view1ColBtn = document.getElementById('view-1-col');
+        const view2ColBtn = document.getElementById('view-2-col');
+        const view3ColBtn = document.getElementById('view-3-col');
 
         let editingProjectIndex = null; // Stores the index of the project being edited
         let editingWeeklyLogIndex = null; // Stores the index of the weekly log being edited
         let projectToDeleteIndex = null; // Stores the index of the project to be permanently deleted
         let currentPage = 'dashboard';
+        let currentLayout = 'lg:grid-cols-3'; // Stores the current grid layout class
+        let currentView = 'grid'; // 'grid' or 'list'
 
         // Function to sort projects based on a given criteria
         function sortProjects(criteria) {
@@ -269,6 +295,37 @@
                 sortedProjects.sort((a, b) => new Date(a.endDate) - new Date(b.endDate));
             }
             return sortedProjects;
+        }
+        
+        // Function to render a compact project list item
+        function renderProjectListRow(project, index) {
+            const statusColors = {
+                "In Progress": "bg-blue-100 text-blue-800",
+                "Completed": "bg-green-100 text-green-800",
+                "On Hold": "bg-yellow-100 text-yellow-800",
+                "Cancelled": "bg-red-100 text-red-800"
+            };
+            
+            const row = document.createElement('div');
+            row.className = "bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex items-center justify-between space-x-4";
+            row.innerHTML = `
+                <div class="flex-grow flex items-center space-x-4">
+                    <h3 class="font-semibold text-lg text-gray-800 min-w-[150px]">${project.name}</h3>
+                    <div class="flex-grow flex items-center space-x-4">
+                        <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}">${project.status}</span>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5 max-w-[200px]">
+                            <div class="bg-indigo-600 h-2.5 rounded-full" style="width: ${project.progress}%;"></div>
+                        </div>
+                        <p class="text-xs text-gray-500">${project.progress}%</p>
+                    </div>
+                </div>
+                <button class="edit-btn text-gray-400 hover:text-indigo-600 transition-colors duration-200" data-index="${index}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                </button>
+            `;
+            return row;
         }
 
         // Function to render a single project card for the main dashboard
@@ -373,12 +430,25 @@
         // Function to render all active projects
         function renderDashboard(sortCriteria = 'none') {
             const projectsToRender = sortProjects(sortCriteria);
-            dashboardGrid.innerHTML = '';
+            dashboardContainer.innerHTML = '';
+            
+            // Update grid layout based on currentView and currentLayout state
+            dashboardContainer.classList.remove('grid', 'gap-6', 'grid-cols-1', 'md:grid-cols-2', 'lg:grid-cols-3');
+            if (currentView === 'grid') {
+                dashboardContainer.classList.add('grid', 'gap-6', currentLayout);
+            } else {
+                dashboardContainer.classList.add('flex', 'flex-col', 'space-y-4');
+            }
+
             if (projectsToRender.length === 0) {
-                dashboardGrid.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects to display. Add a new project to get started!</p>';
+                dashboardContainer.innerHTML = '<p class="text-center text-gray-500 text-lg col-span-full">No projects to display. Add a new project to get started!</p>';
             }
             projectsToRender.forEach((project, index) => {
-                dashboardGrid.appendChild(renderProjectCard(project, index));
+                if (currentView === 'grid') {
+                    dashboardContainer.appendChild(renderProjectCard(project, index));
+                } else {
+                    dashboardContainer.appendChild(renderProjectListRow(project, index));
+                }
             });
         }
         
@@ -550,7 +620,7 @@
         });
 
         // Use event delegation for the edit buttons on project cards
-        dashboardGrid.addEventListener('click', (event) => {
+        dashboardContainer.addEventListener('click', (event) => {
             const editButton = event.target.closest('.edit-btn');
             if (editButton) {
                 const index = editButton.dataset.index;
@@ -670,9 +740,58 @@
         sortBySelect.addEventListener('change', (event) => {
             renderDashboard(event.target.value);
         });
+        
+        // Event listeners for view controls
+        viewListBtn.addEventListener('click', () => {
+            currentView = 'list';
+            updateViewButtons();
+            renderDashboard(sortBySelect.value);
+        });
+        
+        view1ColBtn.addEventListener('click', () => {
+            currentView = 'grid';
+            currentLayout = 'grid-cols-1';
+            updateViewButtons();
+            renderDashboard(sortBySelect.value);
+        });
+
+        view2ColBtn.addEventListener('click', () => {
+            currentView = 'grid';
+            currentLayout = 'md:grid-cols-2';
+            updateViewButtons();
+            renderDashboard(sortBySelect.value);
+        });
+
+        view3ColBtn.addEventListener('click', () => {
+            currentView = 'grid';
+            currentLayout = 'lg:grid-cols-3';
+            updateViewButtons();
+            renderDashboard(sortBySelect.value);
+        });
+
+        function updateViewButtons() {
+            const allViewButtons = [viewListBtn, view1ColBtn, view2ColBtn, view3ColBtn];
+            allViewButtons.forEach(btn => btn.classList.remove('text-indigo-600', 'hover:bg-gray-200'));
+            allViewButtons.forEach(btn => btn.classList.add('text-gray-500', 'hover:bg-gray-200'));
+
+            if (currentView === 'list') {
+                viewListBtn.classList.remove('text-gray-500');
+                viewListBtn.classList.add('text-indigo-600');
+            } else if (currentLayout === 'grid-cols-1') {
+                view1ColBtn.classList.remove('text-gray-500');
+                view1ColBtn.classList.add('text-indigo-600');
+            } else if (currentLayout === 'md:grid-cols-2') {
+                view2ColBtn.classList.remove('text-gray-500');
+                view2ColBtn.classList.add('text-indigo-600');
+            } else if (currentLayout === 'lg:grid-cols-3') {
+                view3ColBtn.classList.remove('text-gray-500');
+                view3ColBtn.classList.add('text-indigo-600');
+            }
+        }
 
         // Initial render
         document.addEventListener('DOMContentLoaded', () => {
+            updateViewButtons(); // Ensure correct button is active on load
             renderAll();
         });
     </script>
